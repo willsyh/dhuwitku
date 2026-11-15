@@ -339,6 +339,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   destructive: true, onTap: _clearAll),
             ]),
             _Group(title: 'Tentang', children: [
+              _Item(Icons.account_balance_wallet_outlined, 'Tentang Dhuwitku',
+                  subtitle: AppInfo.tagline,
+                  onTap: () => Navigator.pushNamed(context, AppRoutes.about)),
               const _Item(Icons.info_outline_rounded, 'Versi aplikasi', subtitle: AppInfo.version),
               const _Item(Icons.cloud_off_outlined, 'Penyimpanan',
                   subtitle: 'Semua data tersimpan di perangkat ini (offline)'),

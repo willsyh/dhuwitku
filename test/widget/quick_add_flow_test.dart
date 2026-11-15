@@ -132,4 +132,21 @@ void main() {
     expect(prefs.getString('festive_theme'), 'natal');
     await disposeApp(tester, db);
   });
+
+  testWidgets('settings opens the About page with the app description', (tester) async {
+    final db = await pumpApp(tester);
+    await tester.tap(find.text('Pengaturan').last);
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Tentang Dhuwitku'), 200,
+        scrollable: find.byType(Scrollable).last);
+    await tester.tap(find.text('Tentang Dhuwitku'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tentang Aplikasi'), findsOneWidget);
+    expect(find.textContaining('aplikasi pencatat keuangan pribadi'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Tanpa iklan dan tanpa pelacakan'), 300,
+        scrollable: find.byType(Scrollable).last);
+    expect(tester.takeException(), isNull);
+    await disposeApp(tester, db);
+  });
 }
