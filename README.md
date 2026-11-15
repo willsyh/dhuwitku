@@ -98,12 +98,15 @@ Indonesian (default), English, 中文 (简体), 日本語 and 한국어 — Sett
 
 ## App icon & splash
 
-- Icon: vector adaptive icon in `android/app/src/main/res/drawable/ic_launcher_foreground.xml`
-  on `@color/ic_launcher_background` (#3B82F6). Android 7.x uses the PNGs in `mipmap-*dpi`;
-  regenerate them with `python tool/render_icon.py android` (needs Pillow) after changing the
-  design, keeping the shapes in the script in sync with the XML.
-- Splash: Android 12+ uses the system splash (`values-v31` / `values-night-v31`); older versions
-  use `drawable/launch_background.xml`. Both follow light/dark via `@color/splash_background`.
+- Icon: made from `tool/app_icon_source.png` (the cloud mascot tile) by
+  `python tool/make_app_icon.py` (needs numpy and Pillow; add `preview` to also write
+  `tool/icon_preview.png` with circle/squircle/rounded-square masks). It writes the Android 8+
+  adaptive layer `mipmap-*/ic_launcher_foreground.png` (tile on its own blue gradient, so any
+  launcher mask looks clean), the Android 7.x `mipmap-*/ic_launcher.png` and the launch-screen
+  logo `drawable-xxxhdpi/splash_logo.png`.
+- Splash: Android 12+ uses the system splash with the adaptive icon layer (`values-v31` /
+  `values-night-v31`); older versions use `drawable/launch_background.xml`. The app then plays
+  its own loading animation (`lib/app/startup_splash.dart`). Both follow light/dark via `@color/splash_background`.
 
 ## Release build
 
