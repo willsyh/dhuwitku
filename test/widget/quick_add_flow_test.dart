@@ -6,6 +6,8 @@ import 'package:dhuwitku/core/database/app_database.dart';
 import 'package:dhuwitku/core/database/database_provider.dart';
 import 'package:dhuwitku/core/utils/formatters.dart';
 import 'package:dhuwitku/features/settings/presentation/settings_providers.dart';
+import 'package:dhuwitku/features/assistant/presentation/assistant_controller.dart';
+import 'package:dhuwitku/features/assistant/presentation/assistant_screen.dart';
 import 'package:dhuwitku/features/assistant/presentation/cloud_mascot.dart';
 import 'package:dhuwitku/features/categories/data/category_repository.dart';
 import 'package:dhuwitku/features/transactions/data/transaction_repository.dart';
@@ -306,6 +308,27 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(TypingDots), findsNothing);
     expect(find.textContaining('Saldo kamu'), findsOneWidget);
+    await disposeApp(tester, db);
+  });
+
+  testWidgets('mascot mood follows the situation', (tester) async {
+    final db = await pumpApp(tester);
+    await openAssistant(tester);
+    MascotMood lastMood() => ProviderScope.containerOf(tester.element(find.byType(AssistantScreen)))
+        .read(assistantProvider)
+        .last
+        .mood;
+
+    expect(lastMood(), MascotMood.happy); // welcome wink
+    await say(tester, 'kopi 25rb');
+    expect(lastMood(), MascotMood.happy); // saved
+    await say(tester, 'kamu siapa');
+    expect(lastMood(), MascotMood.surprised); // didn't understand
+    await say(tester, 'hapus transaksi terakhir');
+    expect(lastMood(), MascotMood.alert); // asks to confirm a delete
+    await say(tester, 'pengeluaran bulan ini?');
+    expect(lastMood(), MascotMood.idle); // plain answer
+    expect(tester.takeException(), isNull);
     await disposeApp(tester, db);
   });
 }

@@ -1,6 +1,7 @@
 import '../../categories/domain/category.dart';
 import '../../transactions/domain/finance_transaction.dart';
 import '../domain/assistant_intent.dart';
+import 'cloud_mascot.dart';
 
 enum ChatSender { user, bot }
 
@@ -53,6 +54,7 @@ class ChatMessage {
     required this.text,
     this.card,
     this.typing = false,
+    this.mood = MascotMood.idle,
   });
 
   final int id;
@@ -63,5 +65,9 @@ class ChatMessage {
   /// Placeholder shown while the assistant prepares a reply (3 moving dots).
   final bool typing;
 
-  ChatMessage withCard(ChatCard card) => ChatMessage(id: id, sender: sender, text: text, card: card);
+  /// The mascot's expression next to this (bot) message.
+  final MascotMood mood;
+
+  ChatMessage withCard(ChatCard card) =>
+      ChatMessage(id: id, sender: sender, text: text, card: card, typing: typing, mood: mood);
 }

@@ -60,6 +60,10 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final messages = ref.watch(assistantProvider);
+    // The header mascot shows the mood of the latest reply.
+    final headerMood = messages
+        .lastWhere((m) => m.sender == ChatSender.bot && !m.typing, orElse: () => messages.first)
+        .mood;
     ref.listen(assistantProvider, (_, _) => _scrollToBottom());
 
     return Scaffold(
@@ -67,7 +71,7 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
         titleSpacing: 0,
         title: Row(
           children: [
-            const CloudMascot(size: 40),
+            CloudMascot(size: 40, mood: headerMood),
             const SizedBox(width: 10),
             Flexible(
               child: Column(
@@ -238,7 +242,9 @@ class _Bubble extends ConsumerWidget {
         children: [
           SizedBox(
             width: 36,
-            child: showAvatar ? CloudMascot(size: 34, animate: animateAvatar) : null,
+            child: showAvatar
+                ? CloudMascot(size: 34, animate: animateAvatar, mood: message.mood)
+                : null,
           ),
           const SizedBox(width: 6),
           Flexible(child: bubble),

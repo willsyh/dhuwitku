@@ -13,6 +13,7 @@ import '../domain/assistant_engine.dart';
 import '../domain/assistant_intent.dart';
 import '../domain/intent_parser.dart';
 import 'chat_message.dart';
+import 'cloud_mascot.dart';
 
 /// Chat state for the offline assistant. History lives in memory for the
 /// current app session only.
@@ -24,12 +25,15 @@ class AssistantController extends Notifier<List<ChatMessage>> {
 
   @override
   List<ChatMessage> build() => [
-        _bot('Hai! Aku Asisten Dhuwitku. Ketik transaksi atau tanya soal keuanganmu.\n\n'
-            '${AssistantEngine.helpText}'),
+        _bot(
+          'Hai! Aku Asisten Dhuwitku. Ketik transaksi atau tanya soal keuanganmu.\n\n'
+          '${AssistantEngine.helpText}',
+          mood: MascotMood.happy,
+        ),
       ];
 
-  ChatMessage _bot(String text, {ChatCard? card}) =>
-      ChatMessage(id: _nextId++, sender: ChatSender.bot, text: text, card: card);
+  ChatMessage _bot(String text, {ChatCard? card, MascotMood mood = MascotMood.idle}) =>
+      ChatMessage(id: _nextId++, sender: ChatSender.bot, text: text, card: card, mood: mood);
 
   /// While a reply is being prepared, bot messages collect here so they all
   /// appear together after the typing indicator.
@@ -84,10 +88,17 @@ class AssistantController extends Notifier<List<ChatMessage>> {
         case DeleteLastIntent():
           _askDelete(data);
         default:
-          _push(_bot(AssistantEngine.answer(intent, data, _money)));
+          _push(_bot(
+            AssistantEngine.answer(intent, data, _money),
+            mood: switch (intent) {
+              UnknownIntent() => MascotMood.surprised,
+              HelpIntent() => MascotMood.happy,
+              _ => MascotMood.idle,
+            },
+          ));
       }
     } catch (e) {
-      _push(_bot('Maaf, terjadi kesalahan: ${errorMessage(e)}'));
+      _push(_bot('Maaf, terjadi kesalahan: ${errorMessage(e)}', mood: MascotMood.alert));
     } finally {
       final remaining = typingDelayFor(text) - DateTime.now().difference(shownAt);
       if (remaining > Duration.zero) await Future<void>.delayed(remaining);
@@ -105,6 +116,7 @@ class AssistantController extends Notifier<List<ChatMessage>> {
       _push(_bot(
         '${i.type.label} ${_money.format(i.amount)} masuk kategori apa?',
         card: CategoryPickCard(pending: i, options: options),
+        mood: MascotMood.surprised,
       ));
       return;
     }
@@ -119,7 +131,7 @@ class AssistantController extends Notifier<List<ChatMessage>> {
     try {
       await _commitAdd(card.pending.withCategory(category));
     } catch (e) {
-      _push(_bot('Maaf, gagal menyimpan: ${errorMessage(e)}'));
+      _push(_bot('Maaf, gagal menyimpan: ${errorMessage(e)}', mood: MascotMood.alert));
     }
   }
 
@@ -135,7 +147,7 @@ class AssistantController extends Notifier<List<ChatMessage>> {
     );
     final error = draft.validate();
     if (error != null) {
-      _push(_bot(error));
+      _push(_bot(error, mood: MascotMood.alert));
       return;
     }
     final id = await repo.add(draft);
@@ -144,7 +156,12 @@ class AssistantController extends Notifier<List<ChatMessage>> {
     final warnings = await BudgetAlertService(ref.read(budgetRepositoryProvider), repo)
         .warningsAfterSave(type: i.type, categoryId: i.category!.id, categoryName: i.category!.name, date: i.date);
     final text = warnings.isEmpty ? 'Tersimpan ✓' : 'Tersimpan ✓\n⚠ ${warnings.join('\n⚠ ')}';
-    _push(_bot(text, card: saved == null ? null : TransactionResultCard(after: saved)));
+    _push(_bot(
+      text,
+      card: saved == null ? null : TransactionResultCard(after: saved),
+      // Budget warning -> "!", otherwise a happy wink.
+      mood: warnings.isEmpty ? MascotMood.happy : MascotMood.alert,
+    ));
   }
 
   // ---- Edit / delete ----------------------------------------------------------
@@ -164,12 +181,13 @@ class AssistantController extends Notifier<List<ChatMessage>> {
   Future<void> _edit(EditLastIntent i, AssistantData data) async {
     final target = _target(data);
     if (target == null) {
-      _push(_bot('Belum ada transaksi untuk diubah.'));
+      _push(_bot('Belum ada transaksi untuk diubah.', mood: MascotMood.surprised));
       return;
     }
     if (!i.hasChanges) {
       _push(_bot('Mau diubah jadi apa? Contoh: "ubah jadi 30rb", "kategorinya jadi makan", '
-          'atau "tanggalnya jadi kemarin".'));
+          'atau "tanggalnya jadi kemarin".',
+          mood: MascotMood.surprised));
       return;
     }
     final category = i.category ?? target.category;
@@ -183,7 +201,7 @@ class AssistantController extends Notifier<List<ChatMessage>> {
     );
     final error = draft.validate();
     if (error != null) {
-      _push(_bot(error));
+      _push(_bot(error, mood: MascotMood.alert));
       return;
     }
     final repo = ref.read(transactionRepositoryProvider);
@@ -191,16 +209,18 @@ class AssistantController extends Notifier<List<ChatMessage>> {
     _lastTouchedId = target.id;
     final after = await repo.getById(target.id);
     _push(_bot('Diperbarui ✓',
-        card: after == null ? null : TransactionResultCard(after: after, before: target)));
+        card: after == null ? null : TransactionResultCard(after: after, before: target),
+        mood: MascotMood.happy));
   }
 
   void _askDelete(AssistantData data) {
     final target = _target(data);
     if (target == null) {
-      _push(_bot('Belum ada transaksi untuk dihapus.'));
+      _push(_bot('Belum ada transaksi untuk dihapus.', mood: MascotMood.surprised));
       return;
     }
-    _push(_bot('Hapus transaksi ini?', card: DeleteConfirmCard(target: target)));
+    _push(_bot('Hapus transaksi ini?',
+        card: DeleteConfirmCard(target: target), mood: MascotMood.alert));
   }
 
   Future<void> confirmDelete(int messageId) async {
@@ -212,7 +232,7 @@ class AssistantController extends Notifier<List<ChatMessage>> {
       _replace(messageId, (m) => m.withCard(card.withState(ConfirmState.done)));
       _push(_bot('Transaksi dihapus.'));
     } catch (e) {
-      _push(_bot('Gagal menghapus: ${errorMessage(e)}'));
+      _push(_bot('Gagal menghapus: ${errorMessage(e)}', mood: MascotMood.alert));
     }
   }
 
@@ -247,9 +267,12 @@ class AssistantController extends Notifier<List<ChatMessage>> {
         );
       }
       _replace(messageId, (m) => m.withCard(card.markUndone()));
-      _push(_bot(before == null ? 'Dibatalkan, transaksi dihapus.' : 'Dibatalkan, data dikembalikan.'));
+      _push(_bot(
+        before == null ? 'Dibatalkan, transaksi dihapus.' : 'Dibatalkan, data dikembalikan.',
+        mood: MascotMood.happy,
+      ));
     } catch (e) {
-      _push(_bot('Gagal membatalkan: ${errorMessage(e)}'));
+      _push(_bot('Gagal membatalkan: ${errorMessage(e)}', mood: MascotMood.alert));
     }
   }
 }
