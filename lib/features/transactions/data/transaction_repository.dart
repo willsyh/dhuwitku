@@ -43,6 +43,12 @@ class TransactionRepository {
   Future<List<FinanceTransaction>> getAll() async =>
       (await _joined().get()).map(_map).toList();
 
+  Future<FinanceTransaction?> getById(int id) async {
+    final q = _joined()..where(_db.transactions.id.equals(id));
+    final row = await q.getSingleOrNull();
+    return row == null ? null : _map(row);
+  }
+
   Future<int> add(TransactionDraft draft, {bool isDemo = false}) async {
     await _check(draft);
     return _db.into(_db.transactions).insert(TransactionsCompanion.insert(

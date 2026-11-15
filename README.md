@@ -14,6 +14,12 @@ Offline-first, no account needed. UI in Indonesian, amounts in Rupiah.
   it on-device (offline, Latin script bundled) and `ReceiptParser` extracts the total, date,
   store name, payment method and a category guess. The quick-add sheet opens pre-filled; nothing
   is saved until the user taps Simpan.
+- **Asisten Dhuwitku** (offline chat, bar under the dashboard greeting): rule-based, no LLM and
+  no network. `IntentParser` turns Indonesian text into intents ("kopi 25rb", "gaji 6,5jt
+  kemarin", "pengeluaran bulan ini?", "sisa anggaran", "tips hemat", "ubah yang tadi jadi
+  30rb", "hapus transaksi terakhir"); `AssistantEngine` / `SavingTips` answer from local data.
+  Adds/edits are undoable from the chat; deletes always ask for confirmation. Chat history is
+  kept in memory for the session only.
 - **Dashboard**: total balance, this month's income/expenses, remaining monthly budget,
   quick actions, budget warnings, 6-month income vs expense chart, latest 5 transactions.
 - **Transactions**: grouped by day with daily totals, search, filter by type / category /

@@ -6,6 +6,7 @@ import 'package:dhuwitku/core/database/app_database.dart';
 import 'package:dhuwitku/core/database/database_provider.dart';
 import 'package:dhuwitku/core/utils/formatters.dart';
 import 'package:dhuwitku/features/settings/presentation/settings_providers.dart';
+import 'package:dhuwitku/features/assistant/presentation/cloud_mascot.dart';
 import 'package:dhuwitku/features/categories/data/category_repository.dart';
 import 'package:dhuwitku/features/transactions/data/transaction_repository.dart';
 import 'package:dhuwitku/features/transactions/presentation/quick_add_sheet.dart';
@@ -30,6 +31,11 @@ void main() {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 2.75;
     addTearDown(tester.view.reset);
+    // "Reduce motion": the looping mascot/typing animations stay still, so
+    // pumpAndSettle can settle (and this checks the app honours the setting).
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
 
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
@@ -209,6 +215,97 @@ void main() {
     expect(saved.single.category.name, 'Kopi');
     expect(saved.single.description, 'Kopi Kenangan');
     expect(saved.single.paymentMethod, 'QRIS');
+    await disposeApp(tester, db);
+  });
+
+  Future<void> openAssistant(WidgetTester tester) async {
+    await tester.tap(find.text('Tanya atau catat lewat chat'));
+    await tester.pumpAndSettle();
+    expect(find.text('Asisten Dhuwitku'), findsOneWidget);
+  }
+
+  Future<void> say(WidgetTester tester, String text) async {
+    await tester.enterText(find.byType(TextField), text);
+    await tester.tap(find.byTooltip('Kirim'));
+    await tester.pump(const Duration(milliseconds: 50));
+    // The reply waits behind the typing indicator for a moment.
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle();
+  }
+
+  Future<List<String>> savedSummary(WidgetTester tester, AppDatabase db) async {
+    final all = (await tester.runAsync(() => TransactionRepository(db).getAll()))!;
+    return [for (final t in all) '${t.category.name}:${t.amount}'];
+  }
+
+  testWidgets('assistant records "kopi 25rb", and Batalkan undoes it', (tester) async {
+    final db = await pumpApp(tester);
+    await openAssistant(tester);
+
+    await say(tester, 'kopi 25rb');
+    expect(await savedSummary(tester, db), ['Kopi:25000']);
+    expect(find.text('Tersimpan ✓'), findsOneWidget);
+
+    await tester.tap(find.text('Batalkan'));
+    await tester.pumpAndSettle();
+    expect(await savedSummary(tester, db), isEmpty);
+    expect(find.textContaining('Dibatalkan'), findsWidgets);
+    await disposeApp(tester, db);
+  });
+
+  testWidgets('assistant asks for a category, then edits and deletes with confirmation',
+      (tester) async {
+    final db = await pumpApp(tester);
+    await openAssistant(tester);
+
+    await say(tester, '250rb');
+    expect(find.textContaining('masuk kategori apa?'), findsOneWidget);
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Belanja'));
+    await tester.pumpAndSettle();
+    expect(await savedSummary(tester, db), ['Belanja:250000']);
+
+    await say(tester, 'ubah yang tadi jadi 300rb');
+    expect(await savedSummary(tester, db), ['Belanja:300000']);
+
+    await say(tester, 'hapus transaksi terakhir');
+    expect(await savedSummary(tester, db), ['Belanja:300000']); // not yet
+    await tester.tap(find.widgetWithText(FilledButton, 'Hapus'));
+    await tester.pumpAndSettle();
+    expect(await savedSummary(tester, db), isEmpty);
+    await disposeApp(tester, db);
+  });
+
+  testWidgets('assistant answers questions and fits a 360dp screen', (tester) async {
+    final db = await pumpApp(tester);
+    tester.view.physicalSize = const Size(1080, 2340);
+    tester.view.devicePixelRatio = 3;
+    await tester.pumpAndSettle();
+    await openAssistant(tester);
+
+    await say(tester, 'makan 40rb');
+    await say(tester, 'pengeluaran bulan ini berapa?');
+    expect(find.textContaining('Pengeluaran bulan ini Rp 40.000 (1 transaksi).'), findsOneWidget);
+    await say(tester, 'saldo?');
+    expect(find.textContaining('Saldo kamu -Rp 40.000.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await disposeApp(tester, db);
+  });
+
+  testWidgets('assistant shows the typing dots before replying', (tester) async {
+    final db = await pumpApp(tester);
+    await openAssistant(tester);
+    expect(find.byType(CloudMascot), findsWidgets);
+
+    await tester.enterText(find.byType(TextField), 'saldo?');
+    await tester.tap(find.byTooltip('Kirim'));
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.byType(TypingDots), findsOneWidget);
+    expect(find.textContaining('Saldo kamu'), findsNothing);
+
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle();
+    expect(find.byType(TypingDots), findsNothing);
+    expect(find.textContaining('Saldo kamu'), findsOneWidget);
     await disposeApp(tester, db);
   });
 }

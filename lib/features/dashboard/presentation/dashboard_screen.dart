@@ -12,6 +12,7 @@ import '../../../core/utils/messenger.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../budgets/domain/budget_calculator.dart';
 import '../../budgets/presentation/budget_progress.dart';
+import '../../assistant/presentation/cloud_mascot.dart';
 import '../../budgets/presentation/budget_providers.dart';
 import '../../receipt_scan/presentation/receipt_scan_flow.dart';
 import '../../settings/presentation/settings_providers.dart';
@@ -55,6 +56,8 @@ class DashboardScreen extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
             children: [
               _Header(festive: festive, onScan: () => startReceiptScan(context, ref)),
+              const SizedBox(height: 14),
+              const _AssistantBar(),
               const SizedBox(height: 16),
               if (hasDemo) ...[
                 _DemoBanner(
@@ -179,6 +182,42 @@ class _Header extends StatelessWidget {
             ),
             icon: const Icon(Icons.document_scanner_outlined),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Opens the offline assistant ("Tanya atau catat...").
+class _AssistantBar extends StatelessWidget {
+  const _AssistantBar();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return AppCard(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      onTap: () => Navigator.pushNamed(context, AppRoutes.assistant),
+      child: Row(
+        children: [
+          const CloudMascot(size: 42),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Tanya atau catat lewat chat',
+                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                Text(
+                  'Contoh: "kopi 25rb" · "pengeluaran bulan ini?"',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.chevron_right_rounded, color: theme.colorScheme.onSurfaceVariant),
         ],
       ),
     );

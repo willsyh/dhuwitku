@@ -1,4 +1,6 @@
 import '../../../core/constants/app_constants.dart';
+import '../../../core/constants/category_keywords.dart';
+import '../../../core/utils/text_match.dart';
 
 /// One line of text found by OCR, with its position on the image.
 class OcrLine {
@@ -83,7 +85,7 @@ abstract final class ReceiptParser {
       date: _findDate(clean, today),
       merchant: merchant,
       categoryName: _guessCategory(clean),
-      paymentMethod: _guessPayment(clean.join('\n').toLowerCase()),
+      paymentMethod: guessPaymentMethod(clean.join('\n').toLowerCase()),
     );
   }
 
@@ -143,7 +145,7 @@ abstract final class ReceiptParser {
     var bestRank = _totalKeywords.length;
     for (var i = 0; i < rows.length; i++) {
       final lower = rows[i].toLowerCase();
-      final rank = _totalKeywords.indexWhere((k) => _containsWord(lower, k));
+      final rank = _totalKeywords.indexWhere((k) => containsWord(lower, k));
       if (rank < 0) continue;
       // "SUBTOTAL" contains "total"; rank it as subtotal.
       final isSub = lower.contains('subtotal') || lower.contains('sub total');
@@ -186,9 +188,6 @@ abstract final class ReceiptParser {
         r'npwp|telp|tel\.|phone|hp\b|no\.|nomor|trx|ref|struk|nota|invoice|kasir|(?<![\d.])\d{1,2}:\d{2}(?!\d)',
         caseSensitive: false,
       ).hasMatch(row);
-
-  static bool _containsWord(String text, String word) =>
-      RegExp('(^|[^a-z])${RegExp.escape(word)}([^a-z]|\$)').hasMatch(text);
 
   // ---- Date ------------------------------------------------------------------
 
@@ -288,41 +287,17 @@ abstract final class ReceiptParser {
 
   // ---- Category & payment ----------------------------------------------------
 
-  // Checked in order; names match the default expense categories.
-  static const _categoryRules = [
-    ('Bensin', ['spbu', 'pertamina', 'shell', 'bp akr', 'vivo energy', 'pertalite', 'pertamax', 'dexlite', 'bbm']),
-    ('Parkir', ['parkir', 'parking', 'secure parking']),
-    ('Kopi', ['kopi', 'coffee', 'cafe', 'starbucks', 'janji jiwa', 'kenangan', 'fore', 'tomoro', 'excelso']),
-    ('Kesehatan', ['apotek', 'apotik', 'pharmacy', 'kimia farma', 'k-24', 'k24', 'guardian', 'century', 'klinik', 'rumah sakit']),
-    ('Tagihan', ['pln', 'token listrik', 'pdam', 'telkom', 'indihome', 'pulsa', 'paket data', 'bpjs']),
-    ('Hiburan', ['cinema', 'xxi', 'cgv', 'cinepolis', 'bioskop', 'karaoke', 'timezone']),
-    ('Transportasi', ['grab', 'gojek', 'gocar', 'goride', 'kai', 'krl', 'kereta', 'e-toll', 'tol', 'damri', 'bluebird', 'taxi', 'transjakarta']),
-    ('Makan', ['resto', 'restaurant', 'restoran', 'rumah makan', 'warung', 'warteg', 'bakso', 'mie', 'nasi', 'ayam', 'sate', 'kfc', 'mcdonald', 'mcd', 'burger', 'pizza', 'solaria', 'hokben', 'richeese', 'padang', 'dimsum', 'seafood']),
-    ('Belanja Harian', ['indomaret', 'alfamart', 'alfamidi', 'superindo', 'hypermart', 'transmart', 'lotte mart', 'lottemart', 'giant', 'hero', 'carrefour', 'ranch market', 'farmers market', 'minimarket', 'supermarket', 'swalayan', 'grosir']),
-    ('Belanja', ['matahari', 'uniqlo', 'h&m', 'zara', 'ace hardware', 'informa', 'miniso', 'erafone', 'ibox', 'gramedia', 'department store']),
-  ];
-
   static String? _guessCategory(List<String> rows) {
     // The header (store name) is the strongest signal; item lines like
     // "KOPI KAPAL API" on a minimarket receipt should not win.
     String? match(String text) {
       final lower = text.toLowerCase();
-      for (final (name, words) in _categoryRules) {
-        if (words.any((w) => _containsWord(lower, w))) return name;
+      for (final (name, words) in storeCategoryRules) {
+        if (words.any((w) => containsWord(lower, w))) return name;
       }
       return null;
     }
 
     return match(rows.take(4).join('\n')) ?? match(rows.join('\n'));
-  }
-
-  static String? _guessPayment(String lower) {
-    if (_containsWord(lower, 'qris')) return 'QRIS';
-    if (RegExp(r'gopay|ovo|dana|shopeepay|linkaja|e-wallet|ewallet').hasMatch(lower)) return 'E-Wallet';
-    if (RegExp(r'kartu kredit|credit card|\bkredit\b|visa|mastercard').hasMatch(lower)) return 'Kartu Kredit';
-    if (RegExp(r'\bdebit\b|edc|\bbca\b|mandiri|\bbri\b|\bbni\b').hasMatch(lower)) return 'Debit';
-    if (RegExp(r'transfer|virtual account').hasMatch(lower)) return 'Transfer';
-    if (RegExp(r'\btunai\b|\bcash\b').hasMatch(lower)) return 'Tunai';
-    return null;
   }
 }
