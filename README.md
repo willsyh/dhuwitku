@@ -70,6 +70,15 @@ flutter test
 flutter run
 ```
 
+## App icon & splash
+
+- Icon: vector adaptive icon in `android/app/src/main/res/drawable/ic_launcher_foreground.xml`
+  on `@color/ic_launcher_background` (#3B82F6). Android 7.x uses the PNGs in `mipmap-*dpi`;
+  regenerate them with `python tool/render_icon.py android` (needs Pillow) after changing the
+  design, keeping the shapes in the script in sync with the XML.
+- Splash: Android 12+ uses the system splash (`values-v31` / `values-night-v31`); older versions
+  use `drawable/launch_background.xml`. Both follow light/dark via `@color/splash_background`.
+
 ## Release build
 
 ```sh

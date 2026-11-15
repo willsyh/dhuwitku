@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand primary (AppColors.primary) -->
+    <color name="ic_launcher_background">#3B82F6</color>
+    <!-- Matches AppColors.lightBackground so the splash blends into the app -->
+    <color name="splash_background">#F8FAFC</color>
+</resources>
