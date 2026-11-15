@@ -20,6 +20,13 @@ class HomeTabNotifier extends Notifier<HomeTab> {
 
 final homeTabProvider = NotifierProvider<HomeTabNotifier, HomeTab>(HomeTabNotifier.new);
 
+/// Bar geometry. The FAB (56) is docked on the bar's top edge and sits in a
+/// curved notch of radius [_fabRadius] + [_notchMargin].
+const double _barHeight = 64;
+const double _barRadius = 32;
+const double _fabRadius = 28;
+const double _notchMargin = 7;
+
 class HomeShell extends ConsumerWidget {
   const HomeShell({super.key});
 
@@ -39,7 +46,36 @@ class HomeShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tab = ref.watch(homeTabProvider);
     final theme = Theme.of(context);
-    final bar = barColor(theme.brightness);
+
+    Widget item(int i) {
+      final it = _items[i];
+      return _NavItem(
+        icon: it.$2,
+        selectedIcon: it.$3,
+        label: it.$4,
+        selected: tab == it.$1,
+        onTap: () => ref.read(homeTabProvider.notifier).select(it.$1),
+      );
+    }
+
+    // One half of the bar. The selected item takes more of the half; the
+    // flex weights are animated so the width change is smooth.
+    Widget side(int a, int b) {
+      final target = Offset(tab == _items[a].$1 ? 1 : 0, tab == _items[b].$1 ? 1 : 0);
+      return Expanded(
+        child: TweenAnimationBuilder<Offset>(
+          tween: Tween(end: target),
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+          builder: (context, w, _) => Row(
+            children: [
+              Expanded(flex: (100 + 120 * w.dx).round(), child: item(a)),
+              Expanded(flex: (100 + 120 * w.dy).round(), child: item(b)),
+            ],
+          ),
+        ),
+      );
+    }
 
     return PopScope(
       canPop: tab == HomeTab.home,
@@ -59,15 +95,13 @@ class HomeShell extends ConsumerWidget {
             SettingsScreen(),
           ],
         ),
-        // Sits centered on the bar's top edge; the ring in the bar color makes
-        // it look cut into the bar.
         floatingActionButton: FloatingActionButton(
           tooltip: 'Catat transaksi',
-          elevation: 2,
-          shape: CircleBorder(side: BorderSide(color: bar, width: 5)),
+          elevation: 4,
           onPressed: () => showQuickAddSheet(context, type: TransactionType.expense),
           child: const Icon(Icons.add_rounded, size: 28),
         ),
+        // Centers the FAB on the bar's top edge, i.e. inside the notch.
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         bottomNavigationBar: SafeArea(
           minimum: const EdgeInsets.only(bottom: 12),
@@ -76,39 +110,26 @@ class HomeShell extends ConsumerWidget {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 520),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Container(
-                  height: 70,
-                  padding: const EdgeInsets.symmetric(horizontal: 6),
-                  decoration: BoxDecoration(
-                    color: bar,
-                    borderRadius: BorderRadius.circular(26),
-                    border: theme.brightness == Brightness.dark
-                        ? Border.all(color: Colors.white.withValues(alpha: 0.06))
-                        : null,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.22),
-                        blurRadius: 24,
-                        offset: const Offset(0, 10),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: PhysicalShape(
+                  clipper: const _NotchedBarClipper(),
+                  color: barColor(theme.brightness),
+                  elevation: 10,
+                  shadowColor: Colors.black.withValues(alpha: 0.5),
+                  child: SizedBox(
+                    height: _barHeight,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Row(
+                        children: [
+                          side(0, 1),
+                          // Narrower than the notch's top opening: the pills sit lower, where
+                          // the curve is narrower.
+                          const SizedBox(width: 60),
+                          side(2, 3),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      for (final (i, item) in _items.indexed) ...[
-                        if (i == 2) const SizedBox(width: 68),
-                        Expanded(
-                          child: _NavItem(
-                            icon: item.$2,
-                            selectedIcon: item.$3,
-                            label: item.$4,
-                            selected: tab == item.$1,
-                            onTap: () => ref.read(homeTabProvider.notifier).select(item.$1),
-                          ),
-                        ),
-                      ],
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -120,8 +141,32 @@ class HomeShell extends ConsumerWidget {
   }
 }
 
-/// Bottom-nav item. The selected one lifts up with a tinted pill behind its
-/// icon; pressing shrinks it slightly, and a mouse hover shows a faint pill.
+/// Rounded "stadium" bar with a smooth circular notch in the top center, so
+/// the + button sits in its own curve instead of merging with the bar.
+class _NotchedBarClipper extends CustomClipper<Path> {
+  const _NotchedBarClipper();
+
+  @override
+  Path getClip(Size size) {
+    final host = Offset.zero & size;
+    final guest = Rect.fromCircle(
+      center: Offset(size.width / 2, 0),
+      radius: _fabRadius + _notchMargin,
+    );
+    // CircularNotchedRectangle gives the notch smooth shoulders; intersecting
+    // with a rounded rect gives the bar its rounded ends.
+    final notched = const CircularNotchedRectangle().getOuterPath(host, guest);
+    final rounded = Path()
+      ..addRRect(RRect.fromRectAndRadius(host, const Radius.circular(_barRadius)));
+    return Path.combine(PathOperation.intersect, notched, rounded);
+  }
+
+  @override
+  bool shouldReclip(_NotchedBarClipper oldClipper) => false;
+}
+
+/// Nav item. The selected one grows into a pill showing the icon and its name
+/// side by side; others show only the icon (name on long-press tooltip).
 class _NavItem extends StatefulWidget {
   const _NavItem({
     required this.icon,
@@ -142,8 +187,8 @@ class _NavItem extends StatefulWidget {
 }
 
 class _NavItemState extends State<_NavItem> {
-  static const _duration = Duration(milliseconds: 320);
-  static const _lift = Curves.easeOutBack;
+  static const _duration = Duration(milliseconds: 300);
+  static const _curve = Curves.easeOutCubic;
 
   bool _pressed = false;
   bool _hovered = false;
@@ -152,83 +197,95 @@ class _NavItemState extends State<_NavItem> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final selected = widget.selected;
-    // The bar is always dark, so colors are tuned for a dark background.
-    // Lighten the theme color a little so darker festive colors stay visible.
-    final accent = Color.lerp(scheme.primary, Colors.white, 0.18)!;
-    final iconColor = selected ? accent : Colors.white.withValues(alpha: 0.6);
-    final labelColor = selected ? Colors.white : Colors.white.withValues(alpha: 0.6);
+    // The bar is always dark. Lighten the theme color a little so darker
+    // festive colors stay visible on it.
+    final accent = Color.lerp(scheme.primary, Colors.white, 0.2)!;
+    final iconColor = selected ? accent : Colors.white.withValues(alpha: 0.62);
 
     final pillColor = selected
-        ? accent.withValues(alpha: 0.18)
+        ? accent.withValues(alpha: 0.2)
         : _hovered || _pressed
-            ? Colors.white.withValues(alpha: 0.08)
-            : Colors.white.withValues(alpha: 0);
+        ? Colors.white.withValues(alpha: 0.08)
+        : Colors.white.withValues(alpha: 0);
 
-    return Semantics(
-      selected: selected,
-      button: true,
-      label: widget.label,
-      excludeSemantics: true,
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        // Hover only makes sense for a real mouse; touch has no hover state.
-        onEnter: (e) {
-          if (e.kind == PointerDeviceKind.mouse) setState(() => _hovered = true);
-        },
-        onExit: (_) => setState(() => _hovered = false),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapDown: (_) => setState(() => _pressed = true),
-          onTapCancel: () => setState(() => _pressed = false),
-          onTapUp: (_) => setState(() => _pressed = false),
-          onTap: () {
-            if (!selected) HapticFeedback.selectionClick();
-            widget.onTap();
+    return Tooltip(
+      message: widget.label,
+      excludeFromSemantics: true,
+      child: Semantics(
+        selected: selected,
+        button: true,
+        label: widget.label,
+        excludeSemantics: true,
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          // Hover only makes sense for a real mouse; touch has no hover state.
+          onEnter: (e) {
+            if (e.kind == PointerDeviceKind.mouse) setState(() => _hovered = true);
           },
-          child: AnimatedSlide(
-            // Lift the selected tab ~6px upward.
-            offset: Offset(0, selected ? -0.12 : 0),
-            duration: _duration,
-            curve: _lift,
-            child: AnimatedScale(
-              scale: _pressed ? 0.92 : 1,
-              duration: const Duration(milliseconds: 120),
-              curve: Curves.easeOut,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  AnimatedContainer(
-                    duration: _duration,
-                    curve: Curves.easeOutCubic,
-                    width: selected ? 56 : 44,
-                    height: 30,
-                    decoration: BoxDecoration(
-                      color: pillColor,
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 200),
-                      transitionBuilder: (child, anim) =>
-                          ScaleTransition(scale: anim, child: child),
-                      child: Icon(
-                        selected ? widget.selectedIcon : widget.icon,
-                        key: ValueKey(selected),
-                        color: iconColor,
-                        size: 22,
+          onExit: (_) => setState(() => _hovered = false),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapDown: (_) => setState(() => _pressed = true),
+            onTapCancel: () => setState(() => _pressed = false),
+            onTapUp: (_) => setState(() => _pressed = false),
+            onTap: () {
+              if (!selected) HapticFeedback.selectionClick();
+              widget.onTap();
+            },
+            child: Center(
+              child: AnimatedScale(
+                scale: _pressed ? 0.92 : 1,
+                duration: const Duration(milliseconds: 120),
+                child: AnimatedContainer(
+                  duration: _duration,
+                  curve: _curve,
+                  height: 42,
+                  padding: EdgeInsets.symmetric(horizontal: selected ? 12 : 9),
+                  decoration: BoxDecoration(
+                    color: pillColor,
+                    borderRadius: BorderRadius.circular(21),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        transitionBuilder: (child, anim) =>
+                            ScaleTransition(scale: anim, child: child),
+                        child: Icon(
+                          selected ? widget.selectedIcon : widget.icon,
+                          key: ValueKey(selected),
+                          color: iconColor,
+                          size: 22,
+                        ),
                       ),
-                    ),
+                      // Name slides out next to the icon when selected.
+                      Flexible(
+                        child: AnimatedSize(
+                          duration: _duration,
+                          curve: _curve,
+                          child: selected
+                              ? Padding(
+                                  padding: const EdgeInsets.only(left: 6),
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      widget.label,
+                                      maxLines: 1,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 3),
-                  AnimatedDefaultTextStyle(
-                    duration: _duration,
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      color: labelColor,
-                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                    ),
-                    child: Text(widget.label, maxLines: 1, overflow: TextOverflow.ellipsis),
-                  ),
-                ],
+                ),
               ),
             ),
           ),

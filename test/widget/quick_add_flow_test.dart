@@ -104,7 +104,7 @@ void main() {
   testWidgets('navigates between the four main tabs', (tester) async {
     final db = await pumpApp(tester);
     for (final label in ['Transaksi', 'Statistik', 'Pengaturan', 'Beranda']) {
-      await tester.tap(find.text(label).last);
+      await tester.tap(find.byTooltip(label));
       await tester.pumpAndSettle();
     }
     expect(find.text('Total Saldo'), findsOneWidget);
@@ -115,14 +115,14 @@ void main() {
     final db = await pumpApp(tester);
     expect(find.text('Selamat Natal'), findsNothing);
 
-    await tester.tap(find.text('Pengaturan').last);
+    await tester.tap(find.byTooltip('Pengaturan'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Tema perayaan'));
     await tester.pumpAndSettle();
     await tester.tap(find.textContaining('Natal'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Beranda').last);
+    await tester.tap(find.byTooltip('Beranda'));
     await tester.pumpAndSettle();
     expect(find.text('Selamat Natal'), findsOneWidget);
     final context = tester.element(find.text('Total Saldo'));
@@ -135,10 +135,13 @@ void main() {
 
   testWidgets('settings opens the About page with the app description', (tester) async {
     final db = await pumpApp(tester);
-    await tester.tap(find.text('Pengaturan').last);
+    await tester.tap(find.byTooltip('Pengaturan'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.text('Tentang Dhuwitku'), 200,
         scrollable: find.byType(Scrollable).last);
+    // Bring it above the floating nav bar before tapping.
+    await tester.drag(find.byType(Scrollable).last, const Offset(0, -300));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Tentang Dhuwitku'));
     await tester.pumpAndSettle();
 
@@ -147,6 +150,19 @@ void main() {
     await tester.scrollUntilVisible(find.text('Tanpa iklan dan tanpa pelacakan'), 300,
         scrollable: find.byType(Scrollable).last);
     expect(tester.takeException(), isNull);
+    await disposeApp(tester, db);
+  });
+
+  testWidgets('nav bar fits on a narrow 360dp phone for every selected tab', (tester) async {
+    final db = await pumpApp(tester);
+    tester.view.physicalSize = const Size(1080, 2340);
+    tester.view.devicePixelRatio = 3; // 360 x 780 dp
+    await tester.pumpAndSettle();
+    for (final label in ['Transaksi', 'Statistik', 'Pengaturan', 'Beranda']) {
+      await tester.tap(find.byTooltip(label));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: 'overflow with $label selected');
+    }
     await disposeApp(tester, db);
   });
 }
