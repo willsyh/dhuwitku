@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../../l10n/l10n.dart';
+
 /// Colors for the mascot: a dark cloud with light eyes in light mode, the
 /// reverse in dark mode so it never disappears into the background.
 ({Color body, Color eyes}) _mascotColors(BuildContext context) {
@@ -80,7 +82,7 @@ class _CloudMascotState extends State<CloudMascot> with SingleTickerProviderStat
     final colors = _mascotColors(context);
     final mood = widget.mood;
     return Semantics(
-      label: 'Maskot Asisten Dhuwitku',
+      label: context.l10n.mascotA11y,
       image: true,
       child: RepaintBoundary(
         child: SizedBox.square(
@@ -281,7 +283,7 @@ class _TypingDotsState extends State<TypingDots> with SingleTickerProviderStateM
     final color = widget.color ?? _mascotColors(context).body;
     final d = widget.dotSize;
     return Semantics(
-      label: 'Asisten sedang mengetik',
+      label: context.l10n.typingA11y,
       liveRegion: true,
       child: SizedBox(
         height: d * 2.2,

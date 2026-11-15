@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../l10n/l10n.dart';
 import '../domain/statistics_calculator.dart';
 
 double _niceMax(num value) {
@@ -80,7 +81,7 @@ class IncomeExpenseBarChart extends StatelessWidget {
             touchTooltipData: BarTouchTooltipData(
               getTooltipColor: (_) => scheme.inverseSurface,
               getTooltipItem: (group, _, rod, rodIndex) => BarTooltipItem(
-                '${rodIndex == 0 ? 'Masuk' : 'Keluar'}\n${format(rod.toY.round())}',
+                '${rodIndex == 0 ? context.l10n.legendIn : context.l10n.legendOut}\n${format(rod.toY.round())}',
                 TextStyle(color: scheme.onInverseSurface, fontSize: 12, fontWeight: FontWeight.w600),
               ),
             ),
@@ -263,7 +264,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    focused?.category.name ?? 'Total',
+                    focused?.category.label ?? context.l10n.total,
                     style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                   ),
                   const SizedBox(height: 2),
@@ -296,7 +297,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      t.category.name,
+                      t.category.label,
                       style: TextStyle(fontWeight: i == _touched ? FontWeight.w700 : FontWeight.w500),
                     ),
                   ),

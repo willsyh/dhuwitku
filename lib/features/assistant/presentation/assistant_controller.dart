@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/messenger.dart';
+import '../../../l10n/l10n.dart';
+import '../../../l10n/labels.dart';
 import '../../budgets/data/budget_alert_service.dart';
 import '../../budgets/presentation/budget_providers.dart';
 import '../../categories/domain/category.dart';
@@ -26,8 +28,7 @@ class AssistantController extends Notifier<List<ChatMessage>> {
   @override
   List<ChatMessage> build() => [
         _bot(
-          'Hai! Aku Asisten Dhuwitku. Ketik transaksi atau tanya soal keuanganmu.\n\n'
-          '${AssistantEngine.helpText}',
+          '${l10n.asstWelcome}\n\n${AssistantEngine.helpText}',
           mood: MascotMood.happy,
         ),
       ];
@@ -69,10 +70,13 @@ class AssistantController extends Notifier<List<ChatMessage>> {
         now: DateTime.now(),
       );
 
-  Future<void> send(String input) async {
-    final text = input.trim();
-    if (text.isEmpty) return;
-    _push(ChatMessage(id: _nextId++, sender: ChatSender.user, text: text));
+  /// Sends [input]. [parseAs] lets a suggestion chip show translated text
+  /// while sending a command the parser understands.
+  Future<void> send(String input, {String? parseAs}) async {
+    final shown = input.trim();
+    if (shown.isEmpty) return;
+    final text = parseAs ?? shown;
+    _push(ChatMessage(id: _nextId++, sender: ChatSender.user, text: shown));
     final typing = ChatMessage(id: _nextId++, sender: ChatSender.bot, text: '', typing: true);
     state = [...state, typing];
     final shownAt = DateTime.now();
@@ -98,7 +102,7 @@ class AssistantController extends Notifier<List<ChatMessage>> {
           ));
       }
     } catch (e) {
-      _push(_bot('Maaf, terjadi kesalahan: ${errorMessage(e)}', mood: MascotMood.alert));
+      _push(_bot(l10n.asstError(errorMessage(e)), mood: MascotMood.alert));
     } finally {
       final remaining = typingDelayFor(text) - DateTime.now().difference(shownAt);
       if (remaining > Duration.zero) await Future<void>.delayed(remaining);
@@ -114,7 +118,7 @@ class AssistantController extends Notifier<List<ChatMessage>> {
     if (i.category == null) {
       final options = data.categories.where((c) => c.type == i.type).toList();
       _push(_bot(
-        '${i.type.label} ${_money.format(i.amount)} masuk kategori apa?',
+        l10n.asstWhichCategory(i.type.label, _money.format(i.amount)),
         card: CategoryPickCard(pending: i, options: options),
         mood: MascotMood.surprised,
       ));
@@ -131,7 +135,7 @@ class AssistantController extends Notifier<List<ChatMessage>> {
     try {
       await _commitAdd(card.pending.withCategory(category));
     } catch (e) {
-      _push(_bot('Maaf, gagal menyimpan: ${errorMessage(e)}', mood: MascotMood.alert));
+      _push(_bot(l10n.asstSaveFailed(errorMessage(e)), mood: MascotMood.alert));
     }
   }
 
@@ -154,8 +158,10 @@ class AssistantController extends Notifier<List<ChatMessage>> {
     _lastTouchedId = id;
     final saved = await repo.getById(id);
     final warnings = await BudgetAlertService(ref.read(budgetRepositoryProvider), repo)
-        .warningsAfterSave(type: i.type, categoryId: i.category!.id, categoryName: i.category!.name, date: i.date);
-    final text = warnings.isEmpty ? 'Tersimpan ✓' : 'Tersimpan ✓\n⚠ ${warnings.join('\n⚠ ')}';
+        .warningsAfterSave(type: i.type, categoryId: i.category!.id, categoryName: i.category!.label, date: i.date);
+    final text = warnings.isEmpty
+        ? l10n.asstSaved
+        : '${l10n.asstSaved}\n⚠ ${warnings.join('\n⚠ ')}';
     _push(_bot(
       text,
       card: saved == null ? null : TransactionResultCard(after: saved),
@@ -181,12 +187,11 @@ class AssistantController extends Notifier<List<ChatMessage>> {
   Future<void> _edit(EditLastIntent i, AssistantData data) async {
     final target = _target(data);
     if (target == null) {
-      _push(_bot('Belum ada transaksi untuk diubah.', mood: MascotMood.surprised));
+      _push(_bot(l10n.asstNothingToEdit, mood: MascotMood.surprised));
       return;
     }
     if (!i.hasChanges) {
-      _push(_bot('Mau diubah jadi apa? Contoh: "ubah jadi 30rb", "kategorinya jadi makan", '
-          'atau "tanggalnya jadi kemarin".',
+      _push(_bot(l10n.asstEditHow,
           mood: MascotMood.surprised));
       return;
     }
@@ -208,7 +213,7 @@ class AssistantController extends Notifier<List<ChatMessage>> {
     await repo.update(target.id, draft);
     _lastTouchedId = target.id;
     final after = await repo.getById(target.id);
-    _push(_bot('Diperbarui ✓',
+    _push(_bot(l10n.asstUpdated,
         card: after == null ? null : TransactionResultCard(after: after, before: target),
         mood: MascotMood.happy));
   }
@@ -216,10 +221,10 @@ class AssistantController extends Notifier<List<ChatMessage>> {
   void _askDelete(AssistantData data) {
     final target = _target(data);
     if (target == null) {
-      _push(_bot('Belum ada transaksi untuk dihapus.', mood: MascotMood.surprised));
+      _push(_bot(l10n.asstNothingToDelete, mood: MascotMood.surprised));
       return;
     }
-    _push(_bot('Hapus transaksi ini?',
+    _push(_bot(l10n.asstDeleteQ,
         card: DeleteConfirmCard(target: target), mood: MascotMood.alert));
   }
 
@@ -230,9 +235,9 @@ class AssistantController extends Notifier<List<ChatMessage>> {
       await ref.read(transactionRepositoryProvider).delete(card.target.id);
       if (_lastTouchedId == card.target.id) _lastTouchedId = null;
       _replace(messageId, (m) => m.withCard(card.withState(ConfirmState.done)));
-      _push(_bot('Transaksi dihapus.'));
+      _push(_bot(l10n.transactionDeleted));
     } catch (e) {
-      _push(_bot('Gagal menghapus: ${errorMessage(e)}', mood: MascotMood.alert));
+      _push(_bot(l10n.asstDeleteFailed(errorMessage(e)), mood: MascotMood.alert));
     }
   }
 
@@ -240,7 +245,7 @@ class AssistantController extends Notifier<List<ChatMessage>> {
     final card = state.where((m) => m.id == messageId).firstOrNull?.card;
     if (card is! DeleteConfirmCard || card.state != ConfirmState.pending) return;
     _replace(messageId, (m) => m.withCard(card.withState(ConfirmState.cancelled)));
-    _push(_bot('Oke, tidak jadi dihapus.'));
+    _push(_bot(l10n.asstNotDeleted));
   }
 
   /// Undo an add (delete it) or an edit (restore the previous values).
@@ -268,11 +273,11 @@ class AssistantController extends Notifier<List<ChatMessage>> {
       }
       _replace(messageId, (m) => m.withCard(card.markUndone()));
       _push(_bot(
-        before == null ? 'Dibatalkan, transaksi dihapus.' : 'Dibatalkan, data dikembalikan.',
+        before == null ? l10n.asstUndoneAdd : l10n.asstUndoneEdit,
         mood: MascotMood.happy,
       ));
     } catch (e) {
-      _push(_bot('Gagal membatalkan: ${errorMessage(e)}', mood: MascotMood.alert));
+      _push(_bot(l10n.asstUndoFailed(errorMessage(e)), mood: MascotMood.alert));
     }
   }
 }
@@ -282,7 +287,7 @@ final assistantProvider =
 
 /// Short label for a transaction in chat cards: "Kopi · hari ini · QRIS".
 String describeTransaction(FinanceTransaction t) => [
-      t.title == t.category.name ? t.category.name : '${t.category.name} · ${t.title}',
+      t.title == t.category.label ? t.category.label : '${t.category.label} · ${t.title}',
       relativeDayLabel(t.date),
-      ?t.paymentMethod,
+      if (t.paymentMethod != null) paymentLabel(t.paymentMethod!),
     ].join(' · ');

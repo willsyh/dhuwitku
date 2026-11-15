@@ -1,4 +1,5 @@
 import '../../../core/constants/transaction_type.dart';
+import '../../../l10n/l10n.dart';
 import '../../categories/domain/category.dart';
 import '../../transactions/domain/finance_transaction.dart';
 import 'budget.dart';
@@ -35,7 +36,7 @@ class BudgetStatus {
   int get limit => budget.amount;
   int get remaining => limit - spent;
   bool get isOverall => category == null;
-  String get label => category?.name ?? 'Anggaran Bulanan';
+  String get label => category?.label ?? l10n.monthlyBudget;
 
   /// Spent / limit. Can exceed 1.
   double get ratio => limit <= 0 ? 0 : spent / limit;
@@ -53,9 +54,9 @@ class BudgetStatus {
   /// Indonesian warning message, or null when spending is below 75%.
   String? get warningMessage => switch (level) {
         BudgetLevel.safe => null,
-        BudgetLevel.caution => '$label sudah terpakai $percent%.',
-        BudgetLevel.danger => '$label hampir habis ($percent%).',
-        BudgetLevel.exceeded => '$label terlampaui $percent%!',
+        BudgetLevel.caution => l10n.budgetWarnCaution(label, percent),
+        BudgetLevel.danger => l10n.budgetWarnDanger(label, percent),
+        BudgetLevel.exceeded => l10n.budgetWarnExceeded(label, percent),
       };
 }
 

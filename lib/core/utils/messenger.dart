@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
+import '../../l10n/l10n.dart';
 
 final rootMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
@@ -33,7 +34,7 @@ void showAppSnack(String message, {SnackKind kind = SnackKind.success}) {
 String errorMessage(Object error) {
   final text = error.toString();
   if (text.contains('SqliteException') || text.contains('DriftRemoteException')) {
-    return 'Gagal menyimpan ke database. Coba lagi.';
+    return l10n.errDatabase;
   }
   return text.replaceFirst('Exception: ', '');
 }

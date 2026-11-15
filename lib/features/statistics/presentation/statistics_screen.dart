@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../../l10n/l10n.dart';
 import '../../budgets/presentation/budget_providers.dart';
 import '../../settings/presentation/settings_providers.dart';
 import '../../transactions/domain/finance_transaction.dart';
@@ -33,6 +34,7 @@ class StatisticsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
     final period = ref.watch(statsPeriodProvider);
     final txAsync = ref.watch(transactionsProvider);
     final money = ref.watch(moneyFormatterProvider);
@@ -41,7 +43,7 @@ class StatisticsScreen extends ConsumerWidget {
     final canGoNext = !period.end.isAfter(now);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Statistik')),
+      appBar: AppBar(title: Text(l.navStatistics)),
       body: txAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(error: e),
@@ -67,11 +69,11 @@ class StatisticsScreen extends ConsumerWidget {
               onNext: canGoNext ? () => ref.read(statsPeriodProvider.notifier).shift(1) : null,
             ),
             if (txs.isEmpty)
-              const AppCard(
+              AppCard(
                 child: EmptyState(
                   icon: Icons.insights_outlined,
-                  title: 'Belum ada data',
-                  message: 'Statistik dan insight akan muncul setelah kamu mencatat transaksi.',
+                  title: l.noDataYet,
+                  message: l.statsEmptyMessage,
                 ),
               )
             else
@@ -91,6 +93,7 @@ class StatisticsScreen extends ConsumerWidget {
     DateTime now,
   ) {
     final theme = Theme.of(context);
+    final l = context.l10n;
     final summary = StatisticsCalculator.summarize(txs, period, now: now);
     final byCategory = StatisticsCalculator.expenseByCategory(txs, period);
     final lastDay = period.end.subtract(const Duration(days: 1));
@@ -109,26 +112,26 @@ class StatisticsScreen extends ConsumerWidget {
     final (String trendTitle, List<DayTotal> trend, String Function(DateTime) trendLabel, int every) =
         switch (period.type) {
       PeriodType.day => (
-          'Pengeluaran 7 hari terakhir',
+          l.trendLast7Days,
           StatisticsCalculator.dailyExpenses(
               txs, period.start.subtract(const Duration(days: 6)), period.end),
           (d) => DateFormats.dayMonth.format(d),
           2,
         ),
       PeriodType.week => (
-          'Pengeluaran harian minggu ini',
+          l.trendDailyThisWeek,
           StatisticsCalculator.dailyExpenses(txs, period.start, period.end),
           (d) => DateFormats.dayMonth.format(d),
           2,
         ),
       PeriodType.month => (
-          'Tren pengeluaran harian',
+          l.trendDaily,
           StatisticsCalculator.dailyExpenses(txs, period.start, period.end),
           (d) => '${d.day}',
           5,
         ),
       PeriodType.year => (
-          'Pengeluaran per bulan',
+          l.trendPerMonth,
           StatisticsCalculator.monthlyExpensesOfYear(txs, period.start.year),
           (d) => DateFormats.shortMonth.format(d),
           2,
@@ -165,17 +168,17 @@ class StatisticsScreen extends ConsumerWidget {
         child: Column(
           children: [
             Row(children: [
-              metric('Pengeluaran', money.format(summary.expense), color: AppColors.expense),
+              metric(l.typeExpense, money.format(summary.expense), color: AppColors.expense),
               const SizedBox(width: 12),
-              metric('Pemasukan', money.format(summary.income), color: AppColors.income),
+              metric(l.typeIncome, money.format(summary.income), color: AppColors.income),
             ]),
             const SizedBox(height: 14),
             Row(children: [
-              metric('Selisih', money.format(summary.net),
+              metric(l.net, money.format(summary.net),
                   color: summary.net >= 0 ? AppColors.income : AppColors.expense),
               const SizedBox(width: 12),
               metric(
-                period.type == PeriodType.day ? 'Transaksi' : 'Rata-rata / hari',
+                period.type == PeriodType.day ? l.navTransactions : l.avgPerDay,
                 period.type == PeriodType.day
                     ? '${summary.count}'
                     : money.format(summary.averageDailyExpense),
@@ -185,7 +188,7 @@ class StatisticsScreen extends ConsumerWidget {
         ),
       ),
       const SizedBox(height: 20),
-      SectionHeader(title: 'Insight ${DateFormats.monthYear.format(refMonth)}'),
+      SectionHeader(title: l.insightsFor(DateFormats.monthYear.format(refMonth))),
       AppCard(
         child: Column(
           children: [
@@ -208,30 +211,30 @@ class StatisticsScreen extends ConsumerWidget {
         ),
       ),
       const SizedBox(height: 20),
-      const SectionHeader(title: 'Pengeluaran per Kategori'),
+      SectionHeader(title: l.expenseByCategory),
       AppCard(
         child: byCategory.isEmpty
             ? Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24),
-                child: Center(child: Text('Tidak ada pengeluaran pada periode ini.', style: muted)),
+                child: Center(child: Text(l.noExpenseInPeriod, style: muted)),
               )
             : CategoryDonutChart(totals: byCategory, format: money.format),
       ),
       const SizedBox(height: 20),
-      const SectionHeader(title: 'Pemasukan vs Pengeluaran'),
+      SectionHeader(title: l.incomeVsExpense),
       AppCard(
         padding: const EdgeInsets.fromLTRB(8, 16, 16, 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            const ChartLegend(items: [('Masuk', AppColors.income), ('Keluar', AppColors.expense)]),
+            ChartLegend(items: [(l.legendIn, AppColors.income), (l.legendOut, AppColors.expense)]),
             const SizedBox(height: 12),
             IncomeExpenseBarChart(months: last6, format: money.format),
           ],
         ),
       ),
       const SizedBox(height: 20),
-      const SectionHeader(title: 'Tren Pengeluaran Bulanan'),
+      SectionHeader(title: l.monthlyExpenseTrend),
       AppCard(
         padding: const EdgeInsets.fromLTRB(8, 20, 16, 8),
         child: TrendLineChart(

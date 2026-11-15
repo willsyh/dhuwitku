@@ -1,4 +1,5 @@
 import '../../../core/utils/formatters.dart';
+import '../../../l10n/l10n.dart';
 import '../../budgets/domain/budget_calculator.dart';
 import '../../transactions/domain/finance_transaction.dart';
 import 'statistics_calculator.dart';
@@ -30,12 +31,14 @@ abstract final class InsightsGenerator {
     final today = now ?? DateTime.now();
     final current = Period.of(PeriodType.month, month);
     final isCurrentMonth = current.contains(today);
-    final monthName = isCurrentMonth ? 'bulan ini' : 'bulan ${DateFormats.monthYear.format(month)}';
+    final l = l10n;
+    final monthName =
+        isCurrentMonth ? l.insThisMonth : l.insMonthOf(DateFormats.monthYear.format(month));
     final insights = <Insight>[];
 
     final summary = StatisticsCalculator.summarize(transactions, current, now: today);
     if (summary.count == 0) {
-      return [Insight('Belum ada transaksi $monthName. Catat transaksi pertamamu!', InsightTone.info)];
+      return [Insight(l.insNoTransactions(monthName), InsightTone.info)];
     }
 
     // 1. Largest expense category.
@@ -43,8 +46,8 @@ abstract final class InsightsGenerator {
     if (byCategory.isNotEmpty) {
       final top = byCategory.first;
       insights.add(Insight(
-        'Pengeluaran terbesar $monthName berasal dari kategori ${top.category.name} '
-        '(${money.format(top.amount)}, ${(top.share * 100).round()}%).',
+        l.insTopCategory(
+            monthName, top.category.label, money.format(top.amount), (top.share * 100).round()),
         InsightTone.info,
       ));
     }
@@ -58,7 +61,7 @@ abstract final class InsightsGenerator {
         ? _minDate(DateTime(prev.start.year, prev.start.month, elapsed + 1), prev.end)
         : prev.end;
     final prevWindow = Period(PeriodType.month, prev.start, prevEnd);
-    final comparison = isCurrentMonth ? 'periode yang sama bulan lalu' : 'bulan sebelumnya';
+    final comparison = isCurrentMonth ? l.insCompareSamePeriod : l.insComparePrevMonth;
 
     // 2. Total expense change.
     final nowExpense = StatisticsCalculator.summarize(transactions, thisWindow, now: today).expense;
@@ -67,9 +70,8 @@ abstract final class InsightsGenerator {
       final change = ((nowExpense - prevExpense) / prevExpense * 100).round();
       if (change.abs() >= 5) {
         insights.add(change > 0
-            ? Insight('Total pengeluaran naik $change% dibandingkan $comparison.', InsightTone.warning)
-            : Insight('Hebat! Total pengeluaran turun ${change.abs()}% dibandingkan $comparison.',
-                InsightTone.positive));
+            ? Insight(l.insTotalUp(change, comparison), InsightTone.warning)
+            : Insight(l.insTotalDown(change.abs(), comparison), InsightTone.positive));
       }
     }
 
@@ -91,7 +93,7 @@ abstract final class InsightsGenerator {
     }
     if (biggest != null && biggestChange >= 10) {
       insights.add(Insight(
-        'Pengeluaran ${biggest.category.name} meningkat $biggestChange% dibandingkan $comparison.',
+        l.insCategoryUp(biggest.category.label, biggestChange, comparison),
         InsightTone.warning,
       ));
     }
@@ -106,16 +108,15 @@ abstract final class InsightsGenerator {
       };
       insights.add(Insight(
         b.level == BudgetLevel.exceeded
-            ? 'Pengeluaran sudah melebihi anggaran bulanan sebesar ${money.format(-b.remaining)}.'
-            : 'Kamu sudah menggunakan ${b.percent}% dari anggaran bulanan.',
+            ? l.insBudgetExceeded(money.format(-b.remaining))
+            : l.insBudgetUsed(b.percent),
         tone,
       ));
       if (isCurrentMonth && elapsed > 0 && elapsed < current.dayCount && b.level != BudgetLevel.exceeded) {
         final projected = (summary.expense / elapsed * current.dayCount).round();
         if (projected > b.limit) {
           insights.add(Insight(
-            'Dengan pola saat ini, pengeluaran bulan ini diperkirakan ${money.format(projected)}, '
-            'melebihi anggaran.',
+            l.insProjection(money.format(projected)),
             InsightTone.warning,
           ));
         }
@@ -126,10 +127,9 @@ abstract final class InsightsGenerator {
     if (summary.income > 0) {
       final rate = (summary.net / summary.income * 100).round();
       insights.add(rate >= 0
-          ? Insight('Kamu menyisihkan $rate% dari pemasukan $monthName.',
+          ? Insight(l.insSavingRate(rate, monthName),
               rate >= 20 ? InsightTone.positive : InsightTone.info)
-          : Insight('Pengeluaran $monthName lebih besar ${money.format(-summary.net)} dari pemasukan.',
-              InsightTone.negative));
+          : Insight(l.insOverspend(monthName, money.format(-summary.net)), InsightTone.negative));
     }
 
     // 6. Most frequent category.
@@ -137,8 +137,8 @@ abstract final class InsightsGenerator {
     if (frequent.isNotEmpty && frequent.first.count >= 3) {
       final f = frequent.first;
       insights.add(Insight(
-        'Kamu paling sering mencatat ${f.category.name} (${f.count} kali) $monthName, '
-        'rata-rata ${money.format((f.amount / f.count).round())} per transaksi.',
+        l.insMostFrequent(
+            f.category.label, f.count, monthName, money.format((f.amount / f.count).round())),
         InsightTone.info,
       ));
     }
@@ -146,7 +146,7 @@ abstract final class InsightsGenerator {
     // 7. Average daily spending.
     if (summary.averageDailyExpense > 0) {
       insights.add(Insight(
-        'Rata-rata pengeluaran harian $monthName ${money.format(summary.averageDailyExpense)}.',
+        l.insAvgDaily(monthName, money.format(summary.averageDailyExpense)),
         InsightTone.info,
       ));
     }

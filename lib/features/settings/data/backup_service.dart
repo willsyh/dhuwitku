@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3/sqlite3.dart' as sql;
 
 import '../../../core/database/app_database.dart';
+import '../../../l10n/l10n.dart';
 
 class BackupException implements Exception {
   const BackupException(this.message);
@@ -71,7 +72,7 @@ class BackupService {
     final magic = header.readSync(16);
     header.closeSync();
     if (String.fromCharCodes(magic) != 'SQLite format 3\u0000') {
-      throw const BackupException('File bukan cadangan Dhuwitku yang valid.');
+      throw BackupException(l10n.errBackupInvalid);
     }
 
     final db = sql.sqlite3.open(path, mode: sql.OpenMode.readOnly);
@@ -81,20 +82,19 @@ class BackupService {
           .map((r) => r['name'] as String)
           .toSet();
       if (!tables.containsAll(_requiredTables)) {
-        throw const BackupException('File cadangan tidak berisi data Dhuwitku.');
+        throw BackupException(l10n.errBackupNoData);
       }
       final version = db.userVersion;
       if (version < 1 || version > AppDatabase.currentSchemaVersion) {
-        throw const BackupException(
-            'Cadangan dibuat oleh versi aplikasi yang lebih baru. Perbarui aplikasi terlebih dahulu.');
+        throw BackupException(l10n.errBackupNewer);
       }
       final integrity = db.select('PRAGMA integrity_check').first.values.first;
-      if (integrity != 'ok') throw const BackupException('File cadangan rusak.');
+      if (integrity != 'ok') throw BackupException(l10n.errBackupCorrupt);
       if (db.select('PRAGMA foreign_key_check').isNotEmpty) {
-        throw const BackupException('Data dalam cadangan tidak konsisten.');
+        throw BackupException(l10n.errBackupInconsistent);
       }
     } on sql.SqliteException {
-      throw const BackupException('File cadangan tidak dapat dibaca.');
+      throw BackupException(l10n.errBackupUnreadable);
     } finally {
       db.close();
     }

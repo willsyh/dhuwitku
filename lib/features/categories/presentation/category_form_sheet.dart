@@ -6,6 +6,7 @@ import '../../../core/constants/category_style.dart';
 import '../../../core/constants/transaction_type.dart';
 import '../../../core/utils/messenger.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../../l10n/l10n.dart';
 import '../domain/category.dart';
 import 'category_providers.dart';
 
@@ -33,7 +34,7 @@ class _CategoryForm extends ConsumerStatefulWidget {
 }
 
 class _CategoryFormState extends ConsumerState<_CategoryForm> {
-  late final _name = TextEditingController(text: widget.initial?.name ?? '');
+  late final _name = TextEditingController(text: widget.initial?.label ?? '');
   late String _icon = widget.initial?.iconKey ?? 'other';
   late int _color = widget.initial?.colorValue ?? categoryColors.first;
   String? _error;
@@ -62,9 +63,10 @@ class _CategoryFormState extends ConsumerState<_CategoryForm> {
         );
       } else {
         id = widget.initial!.id;
+        final unchanged = _name.text.trim() == widget.initial!.label;
         await repo.update(Category(
           id: id,
-          name: _name.text,
+          name: unchanged ? widget.initial!.name : _name.text,
           iconKey: _icon,
           colorValue: _color,
           type: widget.type,
@@ -73,7 +75,7 @@ class _CategoryFormState extends ConsumerState<_CategoryForm> {
       }
       if (!mounted) return;
       Navigator.of(context).pop(id);
-      showAppSnack(widget.initial == null ? 'Kategori ditambahkan.' : 'Kategori diperbarui.');
+      showAppSnack(widget.initial == null ? l10n.categoryAdded : l10n.categoryUpdated);
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -85,6 +87,7 @@ class _CategoryFormState extends ConsumerState<_CategoryForm> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final theme = Theme.of(context);
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
@@ -95,7 +98,7 @@ class _CategoryFormState extends ConsumerState<_CategoryForm> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '${widget.initial == null ? 'Kategori Baru' : 'Ubah Kategori'} · ${widget.type.label}',
+              '${widget.initial == null ? l.newCategory : l.editCategory} · ${widget.type.label}',
               style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: 16),
@@ -110,7 +113,7 @@ class _CategoryFormState extends ConsumerState<_CategoryForm> {
                     maxLength: AppLimits.maxCategoryNameLength,
                     textCapitalization: TextCapitalization.words,
                     decoration: InputDecoration(
-                      hintText: 'Nama kategori',
+                      hintText: l.categoryName,
                       counterText: '',
                       errorText: _error,
                     ),
@@ -120,7 +123,7 @@ class _CategoryFormState extends ConsumerState<_CategoryForm> {
               ],
             ),
             const SizedBox(height: 20),
-            Text('Warna', style: theme.textTheme.labelLarge),
+            Text(l.color, style: theme.textTheme.labelLarge),
             const SizedBox(height: 8),
             Wrap(
               spacing: 10,
@@ -130,7 +133,7 @@ class _CategoryFormState extends ConsumerState<_CategoryForm> {
                   Semantics(
                     selected: c == _color,
                     button: true,
-                    label: 'Warna',
+                    label: l.color,
                     child: GestureDetector(
                       onTap: () => setState(() => _color = c),
                       child: AnimatedContainer(
@@ -154,7 +157,7 @@ class _CategoryFormState extends ConsumerState<_CategoryForm> {
               ],
             ),
             const SizedBox(height: 20),
-            Text('Ikon', style: theme.textTheme.labelLarge),
+            Text(l.icon, style: theme.textTheme.labelLarge),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -191,7 +194,7 @@ class _CategoryFormState extends ConsumerState<_CategoryForm> {
               width: double.infinity,
               child: FilledButton(
                 onPressed: _saving ? null : _save,
-                child: const Text('Simpan Kategori'),
+                child: Text(l.saveCategory),
               ),
             ),
           ],

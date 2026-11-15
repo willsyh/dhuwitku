@@ -7,6 +7,7 @@ import '../../../core/utils/formatters.dart';
 import '../../../core/utils/messenger.dart';
 import '../../../core/widgets/amount_input_formatter.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../../l10n/l10n.dart';
 import '../../categories/domain/category.dart';
 import '../../categories/presentation/category_providers.dart';
 import '../../settings/presentation/settings_providers.dart';
@@ -18,6 +19,7 @@ class BudgetsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
     final month = ref.watch(selectedBudgetMonthProvider);
     final async = ref.watch(budgetStatusesProvider((month.year, month.month)));
     final money = ref.watch(moneyFormatterProvider);
@@ -26,7 +28,7 @@ class BudgetsScreen extends ConsumerWidget {
     final isFutureLimit = month.year > now.year + 1;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Anggaran')),
+      appBar: AppBar(title: Text(l.budgets)),
       body: async.when(
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(error: e),
@@ -50,50 +52,50 @@ class BudgetsScreen extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.fromLTRB(4, 0, 4, 12),
                 child: Text(
-                  'Anggaran berlaku mulai bulan yang dipilih dan terus berlanjut ke bulan berikutnya sampai diubah.',
+                  l.budgetCarryHint,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                 ),
               ),
-              const SectionHeader(title: 'Anggaran Bulanan'),
+              SectionHeader(title: l.monthlyBudget),
               if (overall != null)
                 BudgetStatusCard(
                   status: overall,
                   money: money,
-                  onTap: () => _edit(context, ref, month, null, 'Anggaran Bulanan', overall.limit),
-                  onDelete: () => _remove(context, ref, month, null, 'Anggaran Bulanan'),
+                  onTap: () => _edit(context, ref, month, null, l.monthlyBudget, overall.limit),
+                  onDelete: () => _remove(context, ref, month, null, l.monthlyBudget),
                 )
               else
                 AppCard(
-                  onTap: () => _edit(context, ref, month, null, 'Anggaran Bulanan', null),
-                  child: const Row(
+                  onTap: () => _edit(context, ref, month, null, l.monthlyBudget, null),
+                  child: Row(
                     children: [
-                      Icon(Icons.add_circle_outline_rounded),
-                      SizedBox(width: 12),
-                      Expanded(child: Text('Atur anggaran total untuk bulan ini')),
-                      Icon(Icons.chevron_right_rounded),
+                      const Icon(Icons.add_circle_outline_rounded),
+                      const SizedBox(width: 12),
+                      Expanded(child: Text(l.setTotalBudget)),
+                      const Icon(Icons.chevron_right_rounded),
                     ],
                   ),
                 ),
               const SizedBox(height: 20),
               SectionHeader(
-                title: 'Batas per Kategori',
-                actionLabel: unbudgeted.isEmpty ? null : 'Tambah',
+                title: l.categoryLimits,
+                actionLabel: unbudgeted.isEmpty ? null : l.add,
                 onAction: () => _addCategoryBudget(context, ref, month, unbudgeted),
               ),
               if (perCategory.isEmpty)
                 AppCard(
                   child: EmptyState(
                     icon: Icons.donut_small_outlined,
-                    title: 'Belum ada batas kategori',
-                    message: 'Contoh: batasi Kopi Rp 300.000 per bulan.',
+                    title: l.noCategoryLimits,
+                    message: l.categoryLimitExample,
                     action: unbudgeted.isEmpty
                         ? null
                         : OutlinedButton.icon(
                             onPressed: () => _addCategoryBudget(context, ref, month, unbudgeted),
                             icon: const Icon(Icons.add_rounded),
-                            label: const Text('Tambah batas'),
+                            label: Text(l.addLimit),
                           ),
                   ),
                 )
@@ -132,14 +134,17 @@ class BudgetsScreen extends ConsumerWidget {
         builder: (context, controller) => ListView(
           controller: controller,
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(20, 0, 20, 8),
-              child: Text('Pilih kategori', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Text(
+                context.l10n.pickCategory,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
             ),
             for (final c in options)
               ListTile(
                 leading: CategoryAvatar(icon: c.icon, color: c.color, size: 36),
-                title: Text(c.name),
+                title: Text(c.label),
                 onTap: () => Navigator.pop(context, c),
               ),
           ],
@@ -147,7 +152,7 @@ class BudgetsScreen extends ConsumerWidget {
       ),
     );
     if (picked != null && context.mounted) {
-      await _edit(context, ref, month, picked.id, picked.name, null);
+      await _edit(context, ref, month, picked.id, picked.label, null);
     }
   }
 
@@ -171,7 +176,7 @@ class BudgetsScreen extends ConsumerWidget {
             month: month.month,
             amount: amount,
           );
-      showAppSnack('Anggaran $label disimpan.');
+      showAppSnack(l10n.budgetSaved(label));
     } catch (e) {
       showAppSnack(errorMessage(e), kind: SnackKind.error);
     }
@@ -187,17 +192,16 @@ class BudgetsScreen extends ConsumerWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Hapus anggaran?'),
+        title: Text(context.l10n.deleteBudgetQ),
         content: Text(
-          '$label tidak lagi berlaku mulai ${DateFormats.monthYear.format(month)}. '
-          'Anggaran bulan-bulan sebelumnya tetap tersimpan.',
+          context.l10n.deleteBudgetBody(label, DateFormats.monthYear.format(month)),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(context.l10n.cancel)),
           FilledButton(
             style: FilledButton.styleFrom(minimumSize: const Size(64, 40)),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Hapus'),
+            child: Text(context.l10n.delete),
           ),
         ],
       ),
@@ -207,7 +211,7 @@ class BudgetsScreen extends ConsumerWidget {
       await ref
           .read(budgetRepositoryProvider)
           .removeBudget(categoryId: categoryId, year: month.year, month: month.month);
-      showAppSnack('Anggaran $label dihapus.');
+      showAppSnack(l10n.budgetDeleted(label));
     } catch (e) {
       showAppSnack(errorMessage(e), kind: SnackKind.error);
     }
@@ -238,11 +242,11 @@ class _BudgetAmountDialogState extends State<_BudgetAmountDialog> {
   void _submit() {
     final value = parseGroupedDigits(_controller.text);
     if (value <= 0) {
-      setState(() => _error = 'Masukkan jumlah lebih dari 0');
+      setState(() => _error = l10n.errAmountZero);
       return;
     }
     if (value > AppLimits.maxAmount) {
-      setState(() => _error = 'Jumlah terlalu besar');
+      setState(() => _error = l10n.errAmountTooLarge);
       return;
     }
     Navigator.pop(context, value);
@@ -256,7 +260,7 @@ class _BudgetAmountDialogState extends State<_BudgetAmountDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Mulai ${DateFormats.monthYear.format(widget.month)}',
+          Text(context.l10n.startingFrom(DateFormats.monthYear.format(widget.month)),
               style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 12),
           TextField(
@@ -282,11 +286,11 @@ class _BudgetAmountDialogState extends State<_BudgetAmountDialog> {
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(context.l10n.cancel)),
         FilledButton(
           style: FilledButton.styleFrom(minimumSize: const Size(64, 40)),
           onPressed: _submit,
-          child: const Text('Simpan'),
+          child: Text(context.l10n.save),
         ),
       ],
     );

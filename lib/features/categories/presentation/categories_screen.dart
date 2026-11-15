@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/transaction_type.dart';
 import '../../../core/utils/messenger.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../../l10n/l10n.dart';
 import '../domain/category.dart';
 import 'category_form_sheet.dart';
 import 'category_providers.dart';
@@ -30,19 +31,20 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final async = ref.watch(categoriesProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Kelola Kategori'),
+        title: Text(l.manageCategories),
         bottom: TabBar(
           controller: _tabs,
-          tabs: const [Tab(text: 'Pengeluaran'), Tab(text: 'Pemasukan')],
+          tabs: [Tab(text: l.typeExpense), Tab(text: l.typeIncome)],
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => showCategoryFormSheet(context, type: _type),
         icon: const Icon(Icons.add_rounded),
-        label: const Text('Kategori'),
+        label: Text(l.category),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       body: async.when(
@@ -66,8 +68,9 @@ class _CategoryList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
     if (categories.isEmpty) {
-      return const EmptyState(icon: Icons.category_outlined, title: 'Belum ada kategori');
+      return EmptyState(icon: Icons.category_outlined, title: l.noCategories);
     }
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
@@ -80,10 +83,10 @@ class _CategoryList extends ConsumerWidget {
           onTap: () => showCategoryFormSheet(context, type: c.type, initial: c),
           child: ListTile(
             leading: CategoryAvatar(icon: c.icon, color: c.color),
-            title: Text(c.name),
-            subtitle: c.isDefault ? const Text('Bawaan') : null,
+            title: Text(c.label),
+            subtitle: c.isDefault ? Text(l.defaultCategory) : null,
             trailing: IconButton(
-              tooltip: 'Hapus kategori',
+              tooltip: l.deleteCategory,
               icon: const Icon(Icons.delete_outline_rounded),
               onPressed: () => _confirmDelete(context, ref, c),
             ),
@@ -96,7 +99,7 @@ class _CategoryList extends ConsumerWidget {
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref, Category category) async {
     final repo = ref.read(categoryRepositoryProvider);
     if (categories.length <= 1) {
-      showAppSnack('Minimal harus ada satu kategori untuk jenis ini.', kind: SnackKind.warning);
+      showAppSnack(l10n.errLastCategory, kind: SnackKind.warning);
       return;
     }
     final int used;
@@ -119,14 +122,14 @@ class _CategoryList extends ConsumerWidget {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text('Hapus "${category.name}"?'),
+          title: Text(context.l10n.deleteCategoryQ(category.label)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(used == 0
-                  ? 'Kategori ini belum digunakan transaksi apa pun. Anggaran untuk kategori ini juga akan dihapus.'
-                  : '$used transaksi menggunakan kategori ini. Pindahkan transaksi tersebut ke:'),
+                  ? context.l10n.deleteCategoryUnused
+                  : context.l10n.deleteCategoryUsed(used)),
               if (used > 0) ...[
                 const SizedBox(height: 12),
                 DropdownButtonFormField<int>(
@@ -134,7 +137,7 @@ class _CategoryList extends ConsumerWidget {
                   isExpanded: true,
                   items: [
                     for (final c in others)
-                      DropdownMenuItem(value: c.id, child: Text(c.name)),
+                      DropdownMenuItem(value: c.id, child: Text(c.label)),
                   ],
                   onChanged: (v) => setState(() => reassignTo = v ?? reassignTo),
                 ),
@@ -142,14 +145,14 @@ class _CategoryList extends ConsumerWidget {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
+            TextButton(onPressed: () => Navigator.pop(context, false), child: Text(context.l10n.cancel)),
             FilledButton(
               style: FilledButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.error,
                 minimumSize: const Size(64, 40),
               ),
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Hapus'),
+              child: Text(context.l10n.delete),
             ),
           ],
         ),
@@ -158,7 +161,7 @@ class _CategoryList extends ConsumerWidget {
     if (confirmed != true) return;
     try {
       await repo.delete(category.id, reassignTo: used > 0 ? reassignTo : null);
-      showAppSnack('Kategori "${category.name}" dihapus.');
+      showAppSnack(l10n.categoryDeleted(category.label));
     } catch (e) {
       showAppSnack(errorMessage(e), kind: SnackKind.error);
     }

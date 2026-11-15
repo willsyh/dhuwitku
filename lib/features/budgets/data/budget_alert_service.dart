@@ -1,4 +1,5 @@
 import '../../../core/constants/transaction_type.dart';
+import '../../../l10n/l10n.dart';
 import '../../transactions/data/transaction_repository.dart';
 import '../domain/budget_calculator.dart';
 import 'budget_repository.dart';
@@ -27,13 +28,13 @@ class BudgetAlertService {
     if (categoryBudget != null) {
       final spent = await _transactions.monthlyExpense(date.year, date.month, categoryId: categoryId);
       final ratio = spent / categoryBudget.amount;
-      final msg = _message('Anggaran $categoryName', ratio);
+      final msg = _message(l10n.budgetFor(categoryName), ratio);
       if (msg != null) warnings.add(msg);
     }
     final overall = effective[null];
     if (overall != null) {
       final spent = await _transactions.monthlyExpense(date.year, date.month);
-      final msg = _message('Anggaran bulanan', spent / overall.amount);
+      final msg = _message(l10n.monthlyBudget, spent / overall.amount);
       if (msg != null) warnings.add(msg);
     }
     return warnings;
@@ -43,9 +44,9 @@ class BudgetAlertService {
     final pct = (ratio * 100).floor();
     return switch (BudgetStatus.levelFor(ratio)) {
       BudgetLevel.safe => null,
-      BudgetLevel.caution => '$label sudah terpakai $pct%.',
-      BudgetLevel.danger => '$label hampir habis ($pct%).',
-      BudgetLevel.exceeded => '$label terlampaui ($pct%)!',
+      BudgetLevel.caution => l10n.budgetWarnCaution(label, pct),
+      BudgetLevel.danger => l10n.budgetWarnDanger(label, pct),
+      BudgetLevel.exceeded => l10n.budgetWarnExceeded(label, pct),
     };
   }
 }

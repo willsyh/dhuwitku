@@ -1,15 +1,20 @@
 import '../../../core/utils/formatters.dart';
+import '../../../l10n/l10n.dart';
 import '../../categories/domain/category.dart';
 import '../../transactions/domain/finance_transaction.dart';
 
 enum PeriodType {
-  day('Harian'),
-  week('Mingguan'),
-  month('Bulanan'),
-  year('Tahunan');
+  day,
+  week,
+  month,
+  year;
 
-  const PeriodType(this.label);
-  final String label;
+  String get label => switch (this) {
+        day => l10n.periodDaily,
+        week => l10n.periodWeekly,
+        month => l10n.periodMonthly,
+        year => l10n.periodYearly,
+      };
 }
 
 /// Half-open range [start, end).

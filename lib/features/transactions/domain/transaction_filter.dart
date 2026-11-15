@@ -2,6 +2,7 @@ import 'package:flutter/material.dart' show DateTimeRange;
 
 import '../../../core/constants/transaction_type.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../l10n/labels.dart';
 import 'finance_transaction.dart';
 
 enum SortOrder { newestFirst, oldestFirst }
@@ -56,7 +57,10 @@ class TransactionFilter {
       if (start != null && t.date.isBefore(start)) return false;
       if (endExclusive != null && !t.date.isBefore(endExclusive)) return false;
       if (q.isNotEmpty) {
-        final hay = '${t.description ?? ''} ${t.category.name} ${t.paymentMethod ?? ''}'
+        // Stored and translated names, so search works in any app language.
+        final pay = t.paymentMethod;
+        final hay = '${t.description ?? ''} ${t.category.name} ${t.category.label} '
+                '${pay ?? ''} ${pay == null ? '' : paymentLabel(pay)}'
             .toLowerCase();
         if (!hay.contains(q)) return false;
       }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../../l10n/l10n.dart';
 import '../../settings/presentation/settings_providers.dart';
 import '../../transactions/domain/finance_transaction.dart';
 import 'assistant_controller.dart';
@@ -12,14 +13,15 @@ import 'cloud_mascot.dart';
 class AssistantScreen extends ConsumerStatefulWidget {
   const AssistantScreen({super.key});
 
-  static const suggestions = [
-    'Pengeluaran bulan ini',
-    'Sisa anggaran',
-    'Tips hemat',
-    'Kategori terbesar',
-    'Saldo',
-    'Hapus transaksi terakhir',
-  ];
+  /// Quick suggestions: (label in the app language, command sent to the parser).
+  static List<(String, String)> suggestions(AppLocalizations l) => [
+        (l.sugSpendingThisMonth, 'pengeluaran bulan ini'),
+        (l.sugBudgetLeft, 'sisa anggaran'),
+        (l.sugTips, 'tips hemat'),
+        (l.sugTopCategory, 'kategori terbesar'),
+        (l.sugBalance, 'saldo'),
+        (l.sugDeleteLast, 'hapus transaksi terakhir'),
+      ];
 
   @override
   ConsumerState<AssistantScreen> createState() => _AssistantScreenState();
@@ -37,11 +39,11 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
     super.dispose();
   }
 
-  Future<void> _send(String text) async {
+  Future<void> _send(String text, {String? parseAs}) async {
     if (text.trim().isEmpty || _sending) return;
     _input.clear();
     setState(() => _sending = true);
-    await ref.read(assistantProvider.notifier).send(text);
+    await ref.read(assistantProvider.notifier).send(text, parseAs: parseAs);
     if (mounted) setState(() => _sending = false);
   }
 
@@ -58,6 +60,7 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final theme = Theme.of(context);
     final messages = ref.watch(assistantProvider);
     // The header mascot shows the mood of the latest reply.
@@ -78,13 +81,13 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Asisten Dhuwitku',
+                    l.asstTitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleMedium,
                   ),
                   Text(
-                    'Offline · data tetap di HP',
+                    l.asstSubtitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodySmall
@@ -97,7 +100,7 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
         ),
         actions: [
           IconButton(
-            tooltip: 'Mulai ulang percakapan',
+            tooltip: l.asstRestart,
             icon: const Icon(Icons.refresh_rounded),
             onPressed: () => ref.read(assistantProvider.notifier).clear(),
           ),
@@ -129,10 +132,10 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 12),
               children: [
-                for (final s in AssistantScreen.suggestions)
+                for (final (label, command) in AssistantScreen.suggestions(l))
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
-                    child: ActionChip(label: Text(s), onPressed: () => _send(s)),
+                    child: ActionChip(label: Text(label), onPressed: () => _send(label, parseAs: command)),
                   ),
               ],
             ),
@@ -151,14 +154,12 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
                       minLines: 1,
                       maxLines: 3,
                       onSubmitted: _send,
-                      decoration: const InputDecoration(
-                        hintText: 'Contoh: kopi 25rb · saldo?',
-                      ),
+                      decoration: InputDecoration(hintText: l.asstInputHint),
                     ),
                   ),
                   const SizedBox(width: 8),
                   IconButton.filled(
-                    tooltip: 'Kirim',
+                    tooltip: l.asstSend,
                     onPressed: _sending ? null : () => _send(_input.text),
                     style: IconButton.styleFrom(fixedSize: const Size(48, 48)),
                     icon: _sending
@@ -273,13 +274,13 @@ class _CardView extends ConsumerWidget {
             _TxRow(tx: c.after, before: c.before, struck: c.undone),
             const SizedBox(height: 8),
             if (c.undone)
-              Text('Dibatalkan', style: muted)
+              Text(context.l10n.asstUndone, style: muted)
             else
               OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(minimumSize: const Size(0, 36)),
                 onPressed: () => controller.undo(messageId),
                 icon: const Icon(Icons.undo_rounded, size: 18),
-                label: const Text('Batalkan'),
+                label: Text(context.l10n.undo),
               ),
           ],
         );
@@ -298,17 +299,17 @@ class _CardView extends ConsumerWidget {
                         minimumSize: const Size(0, 36),
                       ),
                       onPressed: () => controller.confirmDelete(messageId),
-                      child: const Text('Hapus'),
+                      child: Text(context.l10n.delete),
                     ),
                     const SizedBox(width: 8),
                     TextButton(
                       onPressed: () => controller.cancelDelete(messageId),
-                      child: const Text('Batal'),
+                      child: Text(context.l10n.cancel),
                     ),
                   ],
                 ),
-              ConfirmState.done => Text('Dihapus', style: muted),
-              ConfirmState.cancelled => Text('Tidak jadi dihapus', style: muted),
+              ConfirmState.done => Text(context.l10n.asstDeleted, style: muted),
+              ConfirmState.cancelled => Text(context.l10n.asstNotDeletedShort, style: muted),
             },
           ],
         );
@@ -320,7 +321,7 @@ class _CardView extends ConsumerWidget {
             for (final cat in c.options)
               ChoiceChip(
                 avatar: Icon(cat.icon, size: 16, color: cat.color),
-                label: Text(cat.name),
+                label: Text(cat.label),
                 selected: c.picked?.id == cat.id,
                 onSelected: c.picked != null ? null : (_) => controller.pickCategory(messageId, cat),
               ),
@@ -368,7 +369,7 @@ class _TxRow extends ConsumerWidget {
                 ),
                 if (changedAmount)
                   Text(
-                    'sebelumnya ${money.format(before!.amount)}',
+                    context.l10n.previousAmount(money.format(before!.amount)),
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                       decoration: TextDecoration.lineThrough,

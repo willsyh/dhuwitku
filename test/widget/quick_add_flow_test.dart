@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:dhuwitku/app/app.dart';
+import 'package:dhuwitku/app/home_shell.dart';
+import 'package:dhuwitku/l10n/l10n.dart';
 import 'package:dhuwitku/app/theme/festive_theme.dart';
 import 'package:dhuwitku/core/database/app_database.dart';
 import 'package:dhuwitku/core/database/database_provider.dart';
@@ -329,6 +331,64 @@ void main() {
     await say(tester, 'pengeluaran bulan ini?');
     expect(lastMood(), MascotMood.idle); // plain answer
     expect(tester.takeException(), isNull);
+    await disposeApp(tester, db);
+  });
+
+  testWidgets('language can be switched in Settings and is remembered', (tester) async {
+    final db = await pumpApp(tester);
+    await tester.tap(find.byTooltip('Pengaturan'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Bahasa'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('English'));
+    await tester.pumpAndSettle();
+
+    // Settings and the nav bar are now in English.
+    expect(find.text('Language'), findsOneWidget);
+    expect(find.byTooltip('Home'), findsOneWidget);
+    await tester.tap(find.byTooltip('Home'));
+    await tester.pumpAndSettle();
+    expect(find.text('Total Balance'), findsOneWidget);
+    expect(find.text('Ask or record via chat'), findsOneWidget);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('language'), 'en');
+
+    // And on to Japanese.
+    await tester.tap(find.byTooltip('Settings'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Language'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('日本語'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('ホーム'));
+    await tester.pumpAndSettle();
+    expect(find.text('総残高'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await disposeApp(tester, db);
+  });
+
+  testWidgets('every screen fits a 360dp phone in every language', (tester) async {
+    final db = await pumpApp(tester);
+    tester.view.physicalSize = const Size(1080, 2340);
+    tester.view.devicePixelRatio = 3;
+    final container = ProviderScope.containerOf(tester.element(find.byType(HomeShell)));
+    for (final lang in AppLanguage.values) {
+      await container.read(languageProvider.notifier).set(lang);
+      await tester.pumpAndSettle();
+      final l = lookupAppLocalizations(lang.locale);
+      for (final tab in [l.navTransactions, l.navStatistics, l.navSettings, l.navHome]) {
+        await tester.tap(find.byTooltip(tab));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull, reason: '${lang.code}: $tab');
+      }
+      await tester.tap(find.text(l.assistantBarTitle));
+      await tester.pumpAndSettle();
+      expect(find.text(l.asstTitle), findsOneWidget, reason: '${lang.code}: assistant opened');
+      expect(tester.takeException(), isNull, reason: '${lang.code}: assistant');
+      tester.state<NavigatorState>(find.byType(Navigator).first).pop();
+      await tester.pumpAndSettle();
+    }
+    await container.read(languageProvider.notifier).set(AppLanguage.id);
     await disposeApp(tester, db);
   });
 }

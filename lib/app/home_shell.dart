@@ -9,6 +9,7 @@ import '../features/settings/presentation/settings_screen.dart';
 import '../features/statistics/presentation/statistics_screen.dart';
 import '../features/transactions/presentation/quick_add_sheet.dart';
 import '../features/transactions/presentation/transactions_screen.dart';
+import '../l10n/l10n.dart';
 
 enum HomeTab { home, transactions, statistics, settings }
 
@@ -31,10 +32,10 @@ class HomeShell extends ConsumerWidget {
   const HomeShell({super.key});
 
   static const _items = [
-    (HomeTab.home, Icons.home_outlined, Icons.home_rounded, 'Beranda'),
-    (HomeTab.transactions, Icons.receipt_long_outlined, Icons.receipt_long_rounded, 'Transaksi'),
-    (HomeTab.statistics, Icons.pie_chart_outline_rounded, Icons.pie_chart_rounded, 'Statistik'),
-    (HomeTab.settings, Icons.settings_outlined, Icons.settings_rounded, 'Pengaturan'),
+    (HomeTab.home, Icons.home_outlined, Icons.home_rounded),
+    (HomeTab.transactions, Icons.receipt_long_outlined, Icons.receipt_long_rounded),
+    (HomeTab.statistics, Icons.pie_chart_outline_rounded, Icons.pie_chart_rounded),
+    (HomeTab.settings, Icons.settings_outlined, Icons.settings_rounded),
   ];
 
   /// Near-black floating bar in light mode; a lifted surface in dark mode so it
@@ -46,13 +47,15 @@ class HomeShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tab = ref.watch(homeTabProvider);
     final theme = Theme.of(context);
+    final l = context.l10n;
+    final labels = [l.navHome, l.navTransactions, l.navStatistics, l.navSettings];
 
     Widget item(int i) {
       final it = _items[i];
       return _NavItem(
         icon: it.$2,
         selectedIcon: it.$3,
-        label: it.$4,
+        label: labels[i],
         selected: tab == it.$1,
         onTap: () => ref.read(homeTabProvider.notifier).select(it.$1),
       );
@@ -96,7 +99,7 @@ class HomeShell extends ConsumerWidget {
           ],
         ),
         floatingActionButton: FloatingActionButton(
-          tooltip: 'Catat transaksi',
+          tooltip: l.addTransactionTooltip,
           elevation: 4,
           onPressed: () => showQuickAddSheet(context, type: TransactionType.expense),
           child: const Icon(Icons.add_rounded, size: 28),

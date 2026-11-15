@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/constants/app_constants.dart';
 import '../core/utils/messenger.dart';
 import '../features/settings/presentation/settings_providers.dart';
+import '../l10n/l10n.dart';
 import 'router.dart';
 import 'theme/app_theme.dart';
 
@@ -14,6 +14,7 @@ class DhuwitkuApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final primary = ref.watch(festiveThemeProvider).primary;
+    final language = ref.watch(languageProvider);
     return MaterialApp(
       title: AppInfo.name,
       debugShowCheckedModeBanner: false,
@@ -21,9 +22,9 @@ class DhuwitkuApp extends ConsumerWidget {
       theme: AppTheme.light(primary: primary),
       darkTheme: AppTheme.dark(primary: primary),
       themeMode: ref.watch(themeModeProvider),
-      locale: const Locale('id', 'ID'),
-      supportedLocales: const [Locale('id', 'ID'), Locale('en', 'US')],
-      localizationsDelegates: GlobalMaterialLocalizations.delegates,
+      locale: language.locale,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
       initialRoute: AppRoutes.home,
       onGenerateRoute: AppRouter.onGenerateRoute,
     );

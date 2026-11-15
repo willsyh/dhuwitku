@@ -1,22 +1,28 @@
 import 'package:intl/intl.dart';
 
+import '../../../l10n/l10n.dart';
+import '../../../l10n/labels.dart';
 import '../../transactions/domain/finance_transaction.dart';
 
 /// Builds a CSV of transactions. Dates are ISO (yyyy-MM-dd) and amounts are
 /// plain integers so spreadsheets parse them reliably.
 abstract final class CsvBuilder {
-  static const header = [
-    'ID',
-    'Tanggal',
-    'Waktu',
-    'Jenis',
-    'Kategori',
-    'Jumlah',
-    'Catatan',
-    'Metode Pembayaran',
-    'Dibuat',
-    'Diperbarui',
-  ];
+  /// Column headers in the active language.
+  static List<String> get header {
+    final l = l10n;
+    return [
+      'ID',
+      l.date,
+      l.csvTime,
+      l.type,
+      l.category,
+      l.amount,
+      l.note,
+      l.paymentMethod,
+      l.csvCreated,
+      l.updatedAt,
+    ];
+  }
 
   static final _date = DateFormat('yyyy-MM-dd');
   static final _time = DateFormat('HH:mm');
@@ -30,10 +36,10 @@ abstract final class CsvBuilder {
         _date.format(t.date),
         _time.format(t.date),
         t.type.label,
-        t.category.name,
+        t.category.label,
         '${t.amount}',
         t.description ?? '',
-        t.paymentMethod ?? '',
+        t.paymentMethod == null ? '' : paymentLabel(t.paymentMethod!),
         _stamp.format(t.createdAt),
         _stamp.format(t.updatedAt),
       ].map(escape).join(','));

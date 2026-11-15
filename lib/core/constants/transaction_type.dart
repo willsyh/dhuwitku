@@ -1,11 +1,13 @@
+import '../../l10n/l10n.dart';
+
 /// Whether money came in or went out. Stored as its [name] in the database.
 enum TransactionType {
   expense,
   income;
 
   String get label => switch (this) {
-        TransactionType.expense => 'Pengeluaran',
-        TransactionType.income => 'Pemasukan',
+        TransactionType.expense => l10n.typeExpense,
+        TransactionType.income => l10n.typeIncome,
       };
 
   static TransactionType fromName(String value) =>

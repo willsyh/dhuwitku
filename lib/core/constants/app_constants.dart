@@ -1,7 +1,6 @@
 abstract final class AppInfo {
   static const name = 'Dhuwitku';
   static const version = '1.0.0';
-  static const tagline = 'Catat uangmu dalam hitungan detik.';
 }
 
 abstract final class AppLimits {

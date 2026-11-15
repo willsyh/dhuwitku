@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../core/constants/transaction_type.dart';
 import '../../../core/utils/messenger.dart';
+import '../../../l10n/l10n.dart';
 import '../../categories/presentation/category_providers.dart';
 import '../../transactions/presentation/quick_add_sheet.dart';
 import '../data/receipt_scanner.dart';
@@ -24,7 +25,7 @@ Future<void> startReceiptScan(BuildContext context, WidgetRef ref) async {
     photo = await ImagePicker().pickImage(source: source, maxWidth: 2200, imageQuality: 92);
   } catch (_) {
     showAppSnack(
-      source == ImageSource.camera ? 'Kamera tidak dapat dibuka.' : 'Galeri tidak dapat dibuka.',
+      source == ImageSource.camera ? l10n.errCamera : l10n.errGallery,
       kind: SnackKind.error,
     );
     return;
@@ -44,7 +45,7 @@ Future<void> startReceiptScan(BuildContext context, WidgetRef ref) async {
     rows = await ref.read(receiptScannerProvider).readRows(photo.path);
   } catch (_) {
     navigator.pop();
-    showAppSnack('Gagal membaca struk. Coba foto ulang.', kind: SnackKind.error);
+    showAppSnack(l10n.errReadReceipt, kind: SnackKind.error);
     return;
   }
   navigator.pop();
@@ -53,7 +54,7 @@ Future<void> startReceiptScan(BuildContext context, WidgetRef ref) async {
   final data = ReceiptParser.parse(rows);
   if (data.isEmpty) {
     showAppSnack(
-      'Tidak ada tulisan yang terbaca. Pastikan struk terang, lurus, dan tidak buram.',
+      l10n.receiptNoText,
       kind: SnackKind.warning,
     );
     return;
@@ -63,10 +64,10 @@ Future<void> startReceiptScan(BuildContext context, WidgetRef ref) async {
   final categoryId = categories.where((c) => c.name == data.categoryName).firstOrNull?.id;
 
   final notice = data.total == null
-      ? 'Total tidak terbaca. Isi jumlah secara manual, lalu periksa data lainnya.'
+      ? l10n.receiptNoTotal
       : data.totalFromKeyword
-          ? 'Hasil scan struk. Periksa jumlah, tanggal, dan kategori sebelum menyimpan.'
-          : 'Label TOTAL tidak ditemukan; jumlah ditebak dari angka terbesar. Periksa sebelum menyimpan.';
+          ? l10n.receiptCheck
+          : l10n.receiptGuessedTotal;
 
   await showQuickAddSheet(
     context,
@@ -97,24 +98,24 @@ class _SourceSheet extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
-              child: Text('Scan Struk', style: theme.textTheme.titleMedium),
+              child: Text(context.l10n.scanReceiptTitle, style: theme.textTheme.titleMedium),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
               child: Text(
-                'Foto struk dengan cahaya cukup, posisi lurus, dan tulisan TOTAL terlihat jelas.',
+                context.l10n.receiptTips,
                 style: theme.textTheme.bodySmall
                     ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
               ),
             ),
             ListTile(
               leading: const Icon(Icons.photo_camera_outlined),
-              title: const Text('Ambil foto'),
+              title: Text(context.l10n.takePhoto),
               onTap: () => Navigator.pop(context, ImageSource.camera),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('Pilih dari galeri'),
+              title: Text(context.l10n.pickFromGallery),
               onTap: () => Navigator.pop(context, ImageSource.gallery),
             ),
             Padding(
@@ -126,7 +127,7 @@ class _SourceSheet extends StatelessWidget {
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      'Struk dibaca langsung di HP, tidak dikirim ke internet.',
+                      context.l10n.receiptPrivacy,
                       style: theme.textTheme.bodySmall
                           ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                     ),
@@ -146,12 +147,12 @@ class _ReadingDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const AlertDialog(
+    return AlertDialog(
       content: Row(
         children: [
-          SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2.5)),
-          SizedBox(width: 16),
-          Expanded(child: Text('Membaca struk…')),
+          const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2.5)),
+          const SizedBox(width: 16),
+          Expanded(child: Text(context.l10n.readingReceipt)),
         ],
       ),
     );

@@ -13,6 +13,7 @@ import '../../../core/widgets/common_widgets.dart';
 import '../../budgets/domain/budget_calculator.dart';
 import '../../budgets/presentation/budget_progress.dart';
 import '../../assistant/presentation/cloud_mascot.dart';
+import '../../../l10n/l10n.dart';
 import '../../budgets/presentation/budget_providers.dart';
 import '../../receipt_scan/presentation/receipt_scan_flow.dart';
 import '../../settings/presentation/settings_providers.dart';
@@ -41,6 +42,7 @@ class DashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
     final async = ref.watch(dashboardProvider);
     final money = ref.watch(moneyFormatterProvider);
     final hasDemo = ref.watch(hasDemoDataProvider);
@@ -63,7 +65,7 @@ class DashboardScreen extends ConsumerWidget {
                 _DemoBanner(
                   onRemove: () async {
                     final n = await ref.read(transactionRepositoryProvider).deleteDemoData();
-                    showAppSnack('$n transaksi demo dihapus.');
+                    showAppSnack(l.demoRemoved(n));
                   },
                 ),
                 const SizedBox(height: 12),
@@ -74,8 +76,8 @@ class DashboardScreen extends ConsumerWidget {
               if (d.budgetAlerts.isNotEmpty) ...[
                 const SizedBox(height: 20),
                 SectionHeader(
-                  title: 'Peringatan Anggaran',
-                  actionLabel: 'Kelola',
+                  title: l.dashBudgetAlerts,
+                  actionLabel: l.manage,
                   onAction: () => Navigator.pushNamed(context, AppRoutes.budgets),
                 ),
                 for (final s in d.budgetAlerts.take(3))
@@ -89,24 +91,24 @@ class DashboardScreen extends ConsumerWidget {
                   ),
               ],
               const SizedBox(height: 20),
-              const SectionHeader(title: 'Ringkasan Bulanan'),
+              SectionHeader(title: l.dashMonthlySummary),
               _MonthlyOverview(summary: d, money: money),
               const SizedBox(height: 20),
               SectionHeader(
-                title: 'Transaksi Terakhir',
-                actionLabel: d.recent.isEmpty ? null : 'Lihat semua',
+                title: l.dashRecent,
+                actionLabel: d.recent.isEmpty ? null : l.seeAll,
                 onAction: () => ref.read(homeTabProvider.notifier).select(HomeTab.transactions),
               ),
               if (d.recent.isEmpty)
                 AppCard(
                   child: EmptyState(
                     icon: Icons.receipt_long_outlined,
-                    title: 'Belum ada transaksi',
-                    message: 'Catat pengeluaran pertamamu, hanya butuh beberapa detik.',
+                    title: l.noTransactionsYet,
+                    message: l.dashEmptyMessage,
                     action: FilledButton.icon(
                       onPressed: () => showQuickAddSheet(context),
                       icon: const Icon(Icons.add_rounded),
-                      label: const Text('Catat Sekarang'),
+                      label: Text(l.recordNow),
                     ),
                   ),
                 )
@@ -132,15 +134,16 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final theme = Theme.of(context);
     final hour = DateTime.now().hour;
     final greeting = hour < 11
-        ? 'Selamat pagi'
+        ? l.greetingMorning
         : hour < 15
-        ? 'Selamat siang'
+        ? l.greetingAfternoon
         : hour < 19
-        ? 'Selamat sore'
-        : 'Selamat malam';
+        ? l.greetingEvening
+        : l.greetingNight;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Row(
@@ -173,7 +176,7 @@ class _Header extends StatelessWidget {
           const SizedBox(width: 10),
           // Scan a receipt into a new transaction.
           IconButton.filledTonal(
-            tooltip: 'Scan struk',
+            tooltip: l.scanReceipt,
             onPressed: onScan,
             iconSize: 24,
             style: IconButton.styleFrom(
@@ -194,6 +197,7 @@ class _AssistantBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final theme = Theme.of(context);
     return AppCard(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
@@ -206,10 +210,10 @@ class _AssistantBar extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Tanya atau catat lewat chat',
+                Text(l.assistantBarTitle,
                     style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                 Text(
-                  'Contoh: "kopi 25rb" · "pengeluaran bulan ini?"',
+                  l.assistantBarHint,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
@@ -230,6 +234,7 @@ class _DemoBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     return AppCard(
       color: AppColors.warning.withValues(alpha: 0.12),
       padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
@@ -237,8 +242,8 @@ class _DemoBanner extends StatelessWidget {
         children: [
           const Icon(Icons.science_outlined, color: AppColors.warning),
           const SizedBox(width: 12),
-          const Expanded(child: Text('Mode demo aktif: sebagian data adalah contoh.')),
-          TextButton(onPressed: onRemove, child: const Text('Hapus')),
+          Expanded(child: Text(l.demoActive)),
+          TextButton(onPressed: onRemove, child: Text(l.delete)),
         ],
       ),
     );
@@ -362,10 +367,11 @@ class _BalanceCard extends StatelessWidget {
     Widget Function(String, int, IconData) stat,
   ) {
     const onCard = Colors.white;
+    final l = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Total Saldo', style: TextStyle(color: Colors.white70)),
+        Text(l.totalBalance, style: const TextStyle(color: Colors.white70)),
         const SizedBox(height: 4),
         FittedBox(
           fit: BoxFit.scaleDown,
@@ -382,9 +388,9 @@ class _BalanceCard extends StatelessWidget {
         const SizedBox(height: 18),
         Row(
           children: [
-            stat('Pemasukan bulan ini', summary.monthIncome, Icons.south_west_rounded),
+            stat(l.incomeThisMonth, summary.monthIncome, Icons.south_west_rounded),
             const SizedBox(width: 12),
-            stat('Pengeluaran bulan ini', summary.monthExpense, Icons.north_east_rounded),
+            stat(l.expenseThisMonth, summary.monthExpense, Icons.north_east_rounded),
           ],
         ),
         const SizedBox(height: 16),
@@ -398,17 +404,17 @@ class _BalanceCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
             ),
             child: budget == null
-                ? const Row(
+                ? Row(
                     children: [
-                      Icon(Icons.flag_outlined, color: onCard, size: 18),
-                      SizedBox(width: 8),
+                      const Icon(Icons.flag_outlined, color: onCard, size: 18),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Atur anggaran bulanan',
-                          style: TextStyle(color: onCard, fontWeight: FontWeight.w600),
+                          l.setMonthlyBudget,
+                          style: const TextStyle(color: onCard, fontWeight: FontWeight.w600),
                         ),
                       ),
-                      Icon(Icons.chevron_right_rounded, color: onCard),
+                      const Icon(Icons.chevron_right_rounded, color: onCard),
                     ],
                   )
                 : Column(
@@ -419,8 +425,8 @@ class _BalanceCard extends StatelessWidget {
                           Expanded(
                             child: Text(
                               budget.remaining >= 0
-                                  ? 'Sisa anggaran ${money.format(budget.remaining)}'
-                                  : 'Anggaran terlampaui ${money.format(-budget.remaining)}',
+                                  ? l.budgetRemaining(money.format(budget.remaining))
+                                  : l.budgetExceededBy(money.format(-budget.remaining)),
                               style: const TextStyle(color: onCard, fontWeight: FontWeight.w600),
                             ),
                           ),
@@ -454,6 +460,7 @@ class _BalanceCard extends StatelessWidget {
 class _QuickActions extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
     Widget action(IconData icon, String label, Color color, VoidCallback onTap) => Expanded(
       child: AppCard(
         onTap: onTap,
@@ -478,21 +485,21 @@ class _QuickActions extends ConsumerWidget {
       children: [
         action(
           Icons.remove_rounded,
-          'Pengeluaran',
+          l.typeExpense,
           AppColors.expense,
           () => showQuickAddSheet(context, type: TransactionType.expense),
         ),
         const SizedBox(width: 10),
         action(
           Icons.add_rounded,
-          'Pemasukan',
+          l.typeIncome,
           AppColors.income,
           () => showQuickAddSheet(context, type: TransactionType.income),
         ),
         const SizedBox(width: 10),
         action(
           Icons.receipt_long_rounded,
-          'Riwayat',
+          l.history,
           Theme.of(context).colorScheme.primary,
           () => ref.read(homeTabProvider.notifier).select(HomeTab.transactions),
         ),
@@ -508,6 +515,7 @@ class _MonthlyOverview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final theme = Theme.of(context);
     final muted = theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant);
 
@@ -535,15 +543,15 @@ class _MonthlyOverview extends StatelessWidget {
         children: [
           Row(
             children: [
-              metric('Hari ini', money.format(summary.todayExpense)),
-              metric('Rata-rata / hari', money.format(summary.averageDailyExpense)),
+              metric(l.today, money.format(summary.todayExpense)),
+              metric(l.avgPerDay, money.format(summary.averageDailyExpense)),
             ],
           ),
           const SizedBox(height: 12),
           Row(
             children: [
-              metric('Kategori terbesar', summary.topCategory?.category.name ?? '-'),
-              metric('Transaksi bulan ini', '${summary.monthCount}'),
+              metric(l.topCategory, summary.topCategory?.category.label ?? '-'),
+              metric(l.transactionsThisMonth, '${summary.monthCount}'),
             ],
           ),
           const SizedBox(height: 16),
@@ -551,9 +559,9 @@ class _MonthlyOverview extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: Text('6 bulan terakhir', style: theme.textTheme.labelLarge)),
-              const ChartLegend(
-                items: [('Masuk', AppColors.income), ('Keluar', AppColors.expense)],
+              Expanded(child: Text(l.last6Months, style: theme.textTheme.labelLarge)),
+              ChartLegend(
+                items: [(l.legendIn, AppColors.income), (l.legendOut, AppColors.expense)],
               ),
             ],
           ),
@@ -563,7 +571,7 @@ class _MonthlyOverview extends StatelessWidget {
           else
             SizedBox(
               height: 120,
-              child: Center(child: Text('Grafik muncul setelah ada transaksi.', style: muted)),
+              child: Center(child: Text(l.chartEmpty, style: muted)),
             ),
         ],
       ),

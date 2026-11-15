@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../../l10n/l10n.dart';
+import '../../../l10n/labels.dart';
 import '../../settings/presentation/settings_providers.dart';
 import '../domain/finance_transaction.dart';
 import 'transaction_detail_sheet.dart';
@@ -18,10 +20,11 @@ class TransactionTile extends ConsumerWidget {
     final t = transaction;
     final theme = Theme.of(context);
     final money = ref.watch(moneyFormatterProvider);
+    context.l10n; // rebuild on language change
     final subtitleParts = [
-      if (t.title != t.category.name) t.category.name,
+      if (t.title != t.category.label) t.category.label,
       showDate ? relativeDayLabel(t.date) : DateFormats.time.format(t.date),
-      ?t.paymentMethod,
+      if (t.paymentMethod != null) paymentLabel(t.paymentMethod!),
     ];
 
     return InkWell(

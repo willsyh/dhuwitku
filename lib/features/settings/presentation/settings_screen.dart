@@ -11,6 +11,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/database/database_provider.dart';
 import '../../../core/utils/messenger.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../../l10n/l10n.dart';
 import '../../categories/presentation/category_providers.dart';
 import '../../transactions/presentation/transaction_providers.dart';
 import '../data/backup_service.dart';
@@ -51,16 +52,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final picked = await showDialog<ThemeMode>(
       context: context,
       builder: (context) => SimpleDialog(
-        title: const Text('Tema'),
+        title: Text(context.l10n.theme),
         children: [
           RadioGroup<ThemeMode>(
             groupValue: current,
             onChanged: (v) => Navigator.pop(context, v),
-            child: const Column(
+            child: Column(
               children: [
-                RadioListTile(value: ThemeMode.system, title: Text('Ikuti sistem')),
-                RadioListTile(value: ThemeMode.light, title: Text('Terang')),
-                RadioListTile(value: ThemeMode.dark, title: Text('Gelap')),
+                RadioListTile(value: ThemeMode.system, title: Text(context.l10n.themeSystem)),
+                RadioListTile(value: ThemeMode.light, title: Text(context.l10n.themeLight)),
+                RadioListTile(value: ThemeMode.dark, title: Text(context.l10n.themeDark)),
               ],
             ),
           ),
@@ -75,7 +76,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final picked = await showDialog<FestiveTheme>(
       context: context,
       builder: (context) => SimpleDialog(
-        title: const Text('Tema perayaan'),
+        title: Text(context.l10n.festiveTheme),
         children: [
           RadioGroup<FestiveTheme>(
             groupValue: current,
@@ -101,11 +102,34 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (picked != null) await ref.read(festiveThemeProvider.notifier).set(picked);
   }
 
+  Future<void> _chooseLanguage() async {
+    final current = ref.read(languageProvider);
+    final picked = await showDialog<AppLanguage>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: Text(context.l10n.language),
+        children: [
+          RadioGroup<AppLanguage>(
+            groupValue: current,
+            onChanged: (v) => Navigator.pop(context, v),
+            child: Column(
+              children: [
+                for (final lang in AppLanguage.values)
+                  RadioListTile(value: lang, title: Text(lang.nativeName)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+    if (picked != null) await ref.read(languageProvider.notifier).set(picked);
+  }
+
   Future<void> _chooseCurrency(CurrencyOption current) async {
     final picked = await showDialog<CurrencyOption>(
       context: context,
       builder: (context) => SimpleDialog(
-        title: const Text('Mata uang'),
+        title: Text(context.l10n.currency),
         children: [
           RadioGroup<String>(
             groupValue: current.code,
@@ -117,12 +141,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ],
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(24, 8, 24, 8),
-            child: Text(
-              'Hanya simbol yang berubah. Jumlah tidak dikonversi dan dicatat tanpa desimal.',
-              style: TextStyle(fontSize: 12),
-            ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
+            child: Text(context.l10n.currencyNote, style: const TextStyle(fontSize: 12)),
           ),
         ],
       ),
@@ -138,41 +159,40 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _exportCsv() => _run(() async {
         final txs = await ref.read(transactionRepositoryProvider).getAll();
         if (txs.isEmpty) {
-          showAppSnack('Belum ada transaksi untuk diekspor.', kind: SnackKind.info);
+          showAppSnack(l10n.nothingToExport, kind: SnackKind.info);
           return;
         }
         // BOM so Excel opens the file as UTF-8.
         final bytes = utf8.encode('﻿${CsvBuilder.build(txs)}');
         final uri = await FilePicker.saveFile(
-          dialogTitle: 'Simpan CSV',
+          dialogTitle: l10n.saveCsv,
           fileName: 'dhuwitku_transaksi_$_stamp.csv',
           bytes: bytes,
           mimeType: 'text/csv',
         );
-        if (uri != null) showAppSnack('${txs.length} transaksi diekspor ke CSV.');
+        if (uri != null) showAppSnack(l10n.csvExported(txs.length));
       });
 
   Future<void> _backup() => _run(() async {
         final bytes = await const BackupService().createBackup(ref.read(databaseProvider));
         final uri = await FilePicker.saveFile(
-          dialogTitle: 'Simpan cadangan',
+          dialogTitle: l10n.saveBackup,
           fileName: 'dhuwitku_cadangan_$_stamp.sqlite',
           bytes: bytes,
           mimeType: 'application/octet-stream',
         );
-        if (uri != null) showAppSnack('Cadangan berhasil disimpan.');
+        if (uri != null) showAppSnack(l10n.backupSaved);
       });
 
   Future<void> _restore() async {
     final ok = await _confirm(
-      title: 'Pulihkan dari cadangan?',
-      message: 'Semua data saat ini akan diganti dengan isi file cadangan. '
-          'Sebaiknya buat cadangan data saat ini terlebih dahulu.',
-      action: 'Pilih File',
+      title: context.l10n.restoreQ,
+      message: context.l10n.restoreBody,
+      action: context.l10n.pickFile,
     );
     if (!ok) return;
     await _run(() async {
-      final file = await FilePicker.pickFile(dialogTitle: 'Pilih file cadangan');
+      final file = await FilePicker.pickFile(dialogTitle: l10n.pickBackupFile);
       if (file == null) return;
       final bytes = await file.readAsBytes();
       try {
@@ -181,16 +201,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         // Reopen the database (restored or untouched); every screen reloads.
         ref.invalidate(databaseProvider);
       }
-      showAppSnack('Data berhasil dipulihkan.');
+      showAppSnack(l10n.restoreDone);
     });
   }
 
   Future<void> _loadDemo() async {
     final ok = await _confirm(
-      title: 'Muat data demo?',
-      message: 'Menambahkan contoh transaksi 90 hari terakhir untuk mencoba aplikasi. '
-          'Data demo ditandai dan bisa dihapus kapan saja tanpa mengganggu data aslimu.',
-      action: 'Muat Demo',
+      title: context.l10n.loadDemoQ,
+      message: context.l10n.loadDemoBody,
+      action: context.l10n.loadDemoAction,
       destructive: false,
     );
     if (!ok) return;
@@ -198,13 +217,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final categories = await ref.read(categoryRepositoryProvider).getAll();
       final drafts = DemoData.build(categories);
       await ref.read(transactionRepositoryProvider).addAll(drafts, isDemo: true);
-      showAppSnack('${drafts.length} transaksi demo ditambahkan.');
+      showAppSnack(l10n.demoAdded(drafts.length));
     });
   }
 
   Future<void> _removeDemo() => _run(() async {
         final n = await ref.read(transactionRepositoryProvider).deleteDemoData();
-        showAppSnack('$n transaksi demo dihapus.');
+        showAppSnack(l10n.demoRemoved(n));
       });
 
   Future<void> _clearAll() async {
@@ -213,34 +232,35 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('Hapus semua data?'),
+          title: Text(context.l10n.clearAllQ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Semua transaksi, anggaran, kategori buatanmu, dan pengaturan data akan '
-                  'dihapus permanen. Kategori bawaan akan dibuat ulang.\n\nKetik HAPUS untuk melanjutkan.'),
+              Text(context.l10n.clearAllBody(context.l10n.confirmWord)),
               const SizedBox(height: 12),
               TextField(
                 controller: controller,
                 autofocus: true,
                 textCapitalization: TextCapitalization.characters,
                 onChanged: (_) => setState(() {}),
-                decoration: const InputDecoration(hintText: 'HAPUS'),
+                decoration: InputDecoration(hintText: context.l10n.confirmWord),
               ),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
+            TextButton(
+                onPressed: () => Navigator.pop(context, false), child: Text(context.l10n.cancel)),
             FilledButton(
               style: FilledButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.error,
                 minimumSize: const Size(64, 40),
               ),
-              onPressed: controller.text.trim().toUpperCase() == 'HAPUS'
+              onPressed: controller.text.trim().toUpperCase() ==
+                      context.l10n.confirmWord.toUpperCase()
                   ? () => Navigator.pop(context, true)
                   : null,
-              child: const Text('Hapus Semua'),
+              child: Text(context.l10n.deleteAll),
             ),
           ],
         ),
@@ -250,7 +270,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (ok != true) return;
     await _run(() async {
       await ref.read(databaseProvider).resetAllData();
-      showAppSnack('Semua data telah dihapus.');
+      showAppSnack(l10n.allDataCleared);
     });
   }
 
@@ -266,7 +286,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         title: Text(title),
         content: Text(message),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(context.l10n.cancel)),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: destructive ? Theme.of(context).colorScheme.error : null,
@@ -289,16 +309,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final festive = ref.watch(festiveThemeProvider);
     final currency = ref.watch(currencyProvider).value ?? currencyOptions.first;
     final hasDemo = ref.watch(hasDemoDataProvider);
+    final language = ref.watch(languageProvider);
+    final l = context.l10n;
 
     final themeLabel = switch (themeMode) {
-      ThemeMode.system => 'Ikuti sistem',
-      ThemeMode.light => 'Terang',
-      ThemeMode.dark => 'Gelap',
+      ThemeMode.system => l.themeSystem,
+      ThemeMode.light => l.themeLight,
+      ThemeMode.dark => l.themeDark,
     };
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pengaturan'),
+        title: Text(l.navSettings),
         bottom: _busy
             ? const PreferredSize(preferredSize: Size.fromHeight(2), child: LinearProgressIndicator())
             : null,
@@ -308,43 +330,44 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
           children: [
-            _Group(title: 'Tampilan', children: [
-              _Item(Icons.palette_outlined, 'Tema', subtitle: themeLabel, onTap: _chooseTheme),
-              _Item(Icons.celebration_outlined, 'Tema perayaan',
+            _Group(title: l.appearance, children: [
+              _Item(Icons.translate_rounded, l.language,
+                  subtitle: language.nativeName, onTap: _chooseLanguage),
+              _Item(Icons.palette_outlined, l.theme, subtitle: themeLabel, onTap: _chooseTheme),
+              _Item(Icons.celebration_outlined, l.festiveTheme,
                   subtitle: festive.label, onTap: _chooseFestive),
-              _Item(Icons.payments_outlined, 'Mata uang',
+              _Item(Icons.payments_outlined, l.currency,
                   subtitle: '${currency.code} (${currency.symbol})', onTap: () => _chooseCurrency(currency)),
             ]),
-            _Group(title: 'Kelola', children: [
-              _Item(Icons.category_outlined, 'Kategori',
+            _Group(title: l.manage, children: [
+              _Item(Icons.category_outlined, l.category,
                   onTap: () => Navigator.pushNamed(context, AppRoutes.categories)),
-              _Item(Icons.flag_outlined, 'Anggaran',
+              _Item(Icons.flag_outlined, l.budgets,
                   onTap: () => Navigator.pushNamed(context, AppRoutes.budgets)),
             ]),
-            _Group(title: 'Data', children: [
-              _Item(Icons.table_view_outlined, 'Ekspor transaksi (CSV)', onTap: _exportCsv),
-              _Item(Icons.backup_outlined, 'Cadangkan database', onTap: _backup),
-              _Item(Icons.settings_backup_restore_rounded, 'Pulihkan dari cadangan', onTap: _restore),
+            _Group(title: l.data, children: [
+              _Item(Icons.table_view_outlined, l.exportCsv, onTap: _exportCsv),
+              _Item(Icons.backup_outlined, l.backupDatabase, onTap: _backup),
+              _Item(Icons.settings_backup_restore_rounded, l.restoreFromBackup, onTap: _restore),
             ]),
-            _Group(title: 'Mode Demo', children: [
+            _Group(title: l.demoMode, children: [
               if (hasDemo)
-                _Item(Icons.science_outlined, 'Hapus data demo',
-                    subtitle: 'Hanya transaksi berlabel demo yang dihapus', onTap: _removeDemo)
+                _Item(Icons.science_outlined, l.removeDemo,
+                    subtitle: l.removeDemoHint, onTap: _removeDemo)
               else
-                _Item(Icons.science_outlined, 'Muat data demo',
-                    subtitle: 'Contoh transaksi untuk mencoba fitur', onTap: _loadDemo),
+                _Item(Icons.science_outlined, l.loadDemo,
+                    subtitle: l.loadDemoHint, onTap: _loadDemo),
             ]),
-            _Group(title: 'Zona Bahaya', children: [
-              _Item(Icons.delete_forever_outlined, 'Hapus semua data',
+            _Group(title: l.dangerZone, children: [
+              _Item(Icons.delete_forever_outlined, l.clearAllData,
                   destructive: true, onTap: _clearAll),
             ]),
-            _Group(title: 'Tentang', children: [
-              _Item(Icons.account_balance_wallet_outlined, 'Tentang Dhuwitku',
-                  subtitle: AppInfo.tagline,
+            _Group(title: l.about, children: [
+              _Item(Icons.account_balance_wallet_outlined, l.aboutApp,
+                  subtitle: l.appTagline,
                   onTap: () => Navigator.pushNamed(context, AppRoutes.about)),
-              const _Item(Icons.info_outline_rounded, 'Versi aplikasi', subtitle: AppInfo.version),
-              const _Item(Icons.cloud_off_outlined, 'Penyimpanan',
-                  subtitle: 'Semua data tersimpan di perangkat ini (offline)'),
+              _Item(Icons.info_outline_rounded, l.appVersion, subtitle: AppInfo.version),
+              _Item(Icons.cloud_off_outlined, l.storage, subtitle: l.storageHint),
             ]),
           ],
         ),

@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../../../core/constants/category_style.dart';
 import '../../../core/constants/transaction_type.dart';
+import '../../../l10n/labels.dart';
 
 class Category {
   const Category({
@@ -19,6 +20,10 @@ class Category {
   final int colorValue;
   final TransactionType type;
   final bool isDefault;
+
+  /// Name to show: default categories follow the app language; renamed or
+  /// custom ones are shown as written.
+  String get label => isDefault ? localizedDefaultCategory(name, type) : name;
 
   Color get color => Color(colorValue);
   IconData get icon => iconForKey(iconKey);

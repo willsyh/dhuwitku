@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/database/app_database.dart';
+import '../../../l10n/l10n.dart';
 import '../domain/budget.dart';
 import '../domain/budget_calculator.dart';
 
@@ -29,8 +30,8 @@ class BudgetRepository {
     required int month,
     required int amount,
   }) async {
-    if (amount <= 0) throw const BudgetException('Masukkan anggaran lebih dari 0.');
-    if (amount > AppLimits.maxAmount) throw const BudgetException('Anggaran terlalu besar.');
+    if (amount <= 0) throw BudgetException(l10n.errBudgetZero);
+    if (amount > AppLimits.maxAmount) throw BudgetException(l10n.errBudgetTooLarge);
     await _upsert(categoryId, year, month, amount);
   }
 

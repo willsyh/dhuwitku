@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../../l10n/l10n.dart';
 import '../domain/budget_calculator.dart';
 
 Color budgetColor(BudgetLevel level) => switch (level) {
@@ -13,10 +14,10 @@ Color budgetColor(BudgetLevel level) => switch (level) {
     };
 
 String budgetLevelLabel(BudgetLevel level) => switch (level) {
-      BudgetLevel.safe => 'Aman',
-      BudgetLevel.caution => 'Waspada',
-      BudgetLevel.danger => 'Hampir habis',
-      BudgetLevel.exceeded => 'Terlampaui',
+      BudgetLevel.safe => l10n.levelSafe,
+      BudgetLevel.caution => l10n.levelCaution,
+      BudgetLevel.danger => l10n.levelDanger,
+      BudgetLevel.exceeded => l10n.levelExceeded,
     };
 
 class BudgetProgressBar extends StatelessWidget {
@@ -27,7 +28,7 @@ class BudgetProgressBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'Terpakai ${status.percent} persen',
+      label: context.l10n.usedPercentA11y(status.percent),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(height),
         child: TweenAnimationBuilder<double>(
@@ -87,7 +88,7 @@ class BudgetStatusCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(s.label, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
-                    Text('Anggaran ${money.format(s.limit)}', style: muted),
+                    Text(context.l10n.budgetAmount(money.format(s.limit)), style: muted),
                   ],
                 ),
               ),
@@ -104,7 +105,7 @@ class BudgetStatusCard extends StatelessWidget {
               ),
               if (onDelete != null)
                 IconButton(
-                  tooltip: 'Hapus anggaran',
+                  tooltip: context.l10n.deleteBudget,
                   visualDensity: VisualDensity.compact,
                   onPressed: onDelete,
                   icon: const Icon(Icons.close_rounded, size: 20),
@@ -116,11 +117,11 @@ class BudgetStatusCard extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             children: [
-              Expanded(child: Text('Terpakai ${money.format(s.spent)}', style: muted)),
+              Expanded(child: Text(context.l10n.spentAmount(money.format(s.spent)), style: muted)),
               Text(
                 s.remaining >= 0
-                    ? 'Sisa ${money.format(s.remaining)}'
-                    : 'Lebih ${money.format(-s.remaining)}',
+                    ? context.l10n.leftAmount(money.format(s.remaining))
+                    : context.l10n.overAmount(money.format(-s.remaining)),
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: s.remaining >= 0 ? null : AppColors.expense,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/l10n.dart';
+
 
 /// Rounded surface card with a subtle shadow in light mode and border in dark.
 class AppCard extends StatelessWidget {
@@ -143,11 +145,11 @@ class ErrorView extends StatelessWidget {
   Widget build(BuildContext context) {
     return EmptyState(
       icon: Icons.error_outline_rounded,
-      title: 'Terjadi kesalahan',
+      title: context.l10n.errorTitle,
       message: '$error',
       action: onRetry == null
           ? null
-          : OutlinedButton(onPressed: onRetry, child: const Text('Coba lagi')),
+          : OutlinedButton(onPressed: onRetry, child: Text(context.l10n.retry)),
     );
   }
 }
@@ -178,7 +180,7 @@ class PeriodSwitcher extends StatelessWidget {
         IconButton(
           onPressed: onPrevious,
           icon: const Icon(Icons.chevron_left_rounded),
-          tooltip: 'Sebelumnya',
+          tooltip: context.l10n.previous,
         ),
         Expanded(
           child: Text(
@@ -190,7 +192,7 @@ class PeriodSwitcher extends StatelessWidget {
         IconButton(
           onPressed: onNext,
           icon: const Icon(Icons.chevron_right_rounded),
-          tooltip: 'Berikutnya',
+          tooltip: context.l10n.next,
         ),
       ],
     );

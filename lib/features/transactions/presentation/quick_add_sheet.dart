@@ -8,6 +8,8 @@ import '../../../core/constants/transaction_type.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/messenger.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../../l10n/l10n.dart';
+import '../../../l10n/labels.dart';
 import '../../budgets/data/budget_alert_service.dart';
 import '../../budgets/presentation/budget_providers.dart';
 import '../../categories/domain/category.dart';
@@ -127,7 +129,7 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
       firstDate: DateTime(2000),
       // Matches TransactionDraft.validate (at most a year ahead).
       lastDate: now.add(const Duration(days: 365)),
-      helpText: 'Tanggal transaksi',
+      helpText: context.l10n.transactionDate,
     );
     if (picked == null) return;
     // Keep the time of day so same-day entries stay in recording order.
@@ -163,7 +165,7 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
     final money = ref.read(moneyFormatterProvider);
     final categories = ref.read(categoriesProvider).value ?? const <Category>[];
     final categoryName =
-        categories.where((c) => c.id == _categoryId).firstOrNull?.name ?? 'kategori';
+        categories.where((c) => c.id == _categoryId).firstOrNull?.label ?? l10n.categoryFallback;
     try {
       if (_isEditing) {
         await repo.update(widget.initial!.id, draft);
@@ -179,8 +181,9 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
       );
       if (!mounted) return;
       Navigator.of(context).pop();
-      final verb = _isEditing ? 'diperbarui' : 'tersimpan';
-      final base = '${_type.label} ${money.format(draft.amount)} $verb.';
+      final base = _isEditing
+          ? l10n.txUpdated(_type.label, money.format(draft.amount))
+          : l10n.txSaved(_type.label, money.format(draft.amount));
       if (warnings.isEmpty) {
         showAppSnack(base);
       } else {
@@ -197,6 +200,7 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final theme = Theme.of(context);
     final money = ref.watch(moneyFormatterProvider);
     final categories = ref.watch(categoriesByTypeProvider(_type));
@@ -232,7 +236,7 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
           if (_isEditing)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              child: Text('Ubah Transaksi', style: theme.textTheme.titleMedium),
+              child: Text(l.editTransaction, style: theme.textTheme.titleMedium),
             ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -250,7 +254,7 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
                   color: _amount.value == 0 ? theme.colorScheme.onSurfaceVariant : _typeColor,
                   fontFeatures: tabularFigures,
                 ),
-                child: Text(money.format(_amount.value), semanticsLabel: 'Jumlah'),
+                child: Text(money.format(_amount.value), semanticsLabel: l.amount),
               ),
             ),
           ),
@@ -315,7 +319,7 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
                       ),
                       FilterChip(
                         avatar: const Icon(Icons.notes_rounded, size: 16),
-                        label: const Text('Catatan'),
+                        label: Text(l.note),
                         selected: _showNote,
                         showCheckmark: false,
                         onSelected: (v) {
@@ -339,10 +343,10 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
                       textCapitalization: TextCapitalization.sentences,
                       textInputAction: TextInputAction.done,
                       onSubmitted: (_) => _noteFocus.unfocus(),
-                      decoration: const InputDecoration(
-                        hintText: 'Contoh: Nasi goreng, kopi susu…',
+                      decoration: InputDecoration(
+                        hintText: l.noteHint,
                         counterText: '',
-                        prefixIcon: Icon(Icons.edit_note_rounded),
+                        prefixIcon: const Icon(Icons.edit_note_rounded),
                       ),
                     ),
                   ],
@@ -373,7 +377,7 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
                         child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                       )
                     : const Icon(Icons.check_rounded),
-                label: Text(_isEditing ? 'Simpan Perubahan' : 'Simpan'),
+                label: Text(_isEditing ? l.saveChanges : l.save),
               ),
             ),
           ),
@@ -390,6 +394,7 @@ class _TypeToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final scheme = Theme.of(context).colorScheme;
     Widget option(TransactionType t, Color color) {
       final selected = t == value;
@@ -425,7 +430,7 @@ class _TypeToggle extends StatelessWidget {
     }
 
     return Semantics(
-      label: 'Jenis transaksi',
+      label: l.transactionType,
       child: Container(
         padding: const EdgeInsets.all(3),
         decoration: BoxDecoration(
@@ -460,6 +465,7 @@ class _CategoryGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final scheme = Theme.of(context).colorScheme;
     final count = categories.length + 1;
     return SizedBox(
@@ -479,7 +485,7 @@ class _CategoryGrid extends StatelessWidget {
               context,
               icon: Icons.add_rounded,
               color: scheme.onSurfaceVariant,
-              label: 'Baru',
+              label: l.newCategoryShort,
               selected: false,
               onTap: onCreate,
             );
@@ -489,7 +495,7 @@ class _CategoryGrid extends StatelessWidget {
             context,
             icon: c.icon,
             color: c.color,
-            label: c.name,
+            label: c.label,
             selected: c.id == selectedId,
             onTap: () {
               HapticFeedback.selectionClick();
@@ -556,17 +562,18 @@ class _PaymentChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     return PopupMenuButton<String>(
-      tooltip: 'Metode pembayaran',
+      tooltip: l.paymentMethod,
       onSelected: (v) => onChanged(v.isEmpty ? null : v),
       itemBuilder: (_) => [
         for (final m in paymentMethods)
-          CheckedPopupMenuItem(value: m, checked: m == value, child: Text(m)),
-        if (value != null) const PopupMenuItem(value: '', child: Text('Hapus metode')),
+          CheckedPopupMenuItem(value: m, checked: m == value, child: Text(paymentLabel(m))),
+        if (value != null) PopupMenuItem(value: '', child: Text(l.clearPaymentMethod)),
       ],
       child: Chip(
         avatar: const Icon(Icons.account_balance_wallet_outlined, size: 16),
-        label: Text(value ?? 'Metode'),
+        label: Text(value == null ? l.method : paymentLabel(value!)),
       ),
     );
   }
@@ -589,6 +596,7 @@ class _Keypad extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final scheme = Theme.of(context).colorScheme;
     Widget key(Widget child, VoidCallback onTap, {VoidCallback? onLongPress, String? label}) {
       return Expanded(
@@ -623,13 +631,13 @@ class _Keypad extends StatelessWidget {
           Row(children: [digit(4), digit(5), digit(6)]),
           Row(children: [digit(7), digit(8), digit(9)]),
           Row(children: [
-            key(const Text('000', style: digitStyle), onThousand, label: 'Tiga nol'),
+            key(const Text('000', style: digitStyle), onThousand, label: l.tripleZero),
             digit(0),
             key(
               const Icon(Icons.backspace_outlined),
               onBackspace,
               onLongPress: onClear,
-              label: 'Hapus angka. Tahan untuk menghapus semua',
+              label: l.backspaceHint,
             ),
           ]),
         ],

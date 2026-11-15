@@ -80,6 +80,22 @@ flutter test
 flutter run
 ```
 
+## Languages
+
+Indonesian (default), English, 中文 (简体), 日本語 and 한국어 — Settings → Tampilan → Bahasa.
+
+- Text lives in `lib/l10n/app_<code>.arb`; `app_id.arb` is the template. Code is generated into
+  `lib/l10n/gen/` by `flutter gen-l10n` (also on build, `generate: true`). Add a key to every ARB;
+  `test/domain/l10n_test.dart` fails if a language is missing one.
+- Widgets use `context.l10n`; non-widget code (insights, assistant, errors) uses the global `l10n`
+  from `lib/l10n/l10n.dart`, kept in sync by `LanguageNotifier`.
+- Default categories and payment methods are stored with Indonesian names and shown translated
+  (`Category.label`, `paymentLabel` in `lib/l10n/labels.dart`); renamed/custom categories are shown
+  as written. Rupiah formatting stays `Rp 15.000` in every language; dates and short numbers
+  (rb/jt, k/M, 万/億/만) follow the language.
+- The chat assistant answers in the app language and understands commands in Indonesian and
+  basic English.
+
 ## App icon & splash
 
 - Icon: vector adaptive icon in `android/app/src/main/res/drawable/ic_launcher_foreground.xml`

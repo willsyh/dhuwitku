@@ -2,39 +2,36 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../../l10n/l10n.dart';
 
 /// "Tentang Dhuwitku": what the app is, what it does, and how data is handled.
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
-  static const _features = [
-    (Icons.bolt_rounded, 'Catat dalam hitungan detik',
-        'Masukkan jumlah, pilih kategori, simpan. Cocok untuk pengeluaran kecil harian seperti makan, kopi, bensin, dan parkir.'),
-    (Icons.dashboard_rounded, 'Ringkasan sekilas',
-        'Saldo, pemasukan, dan pengeluaran bulan ini langsung terlihat di Beranda.'),
-    (Icons.flag_rounded, 'Anggaran & peringatan',
-        'Atur anggaran bulanan dan batas per kategori. Peringatan muncul saat terpakai 75%, 90%, dan lebih dari 100%.'),
-    (Icons.insights_rounded, 'Statistik & insight',
-        'Grafik harian hingga tahunan, rincian per kategori, dan insight yang dihitung dari datamu sendiri.'),
-    (Icons.backup_rounded, 'Ekspor & cadangan',
-        'Ekspor transaksi ke CSV, cadangkan, dan pulihkan database kapan saja.'),
-  ];
+  static List<(IconData, String, String)> _features(AppLocalizations l) => [
+        (Icons.bolt_rounded, l.aboutFeatureFastTitle, l.aboutFeatureFastBody),
+        (Icons.dashboard_rounded, l.aboutFeatureOverviewTitle, l.aboutFeatureOverviewBody),
+        (Icons.flag_rounded, l.aboutFeatureBudgetTitle, l.aboutFeatureBudgetBody),
+        (Icons.insights_rounded, l.aboutFeatureStatsTitle, l.aboutFeatureStatsBody),
+        (Icons.backup_rounded, l.aboutFeatureBackupTitle, l.aboutFeatureBackupBody),
+      ];
 
-  static const _privacy = [
-    (Icons.cloud_off_rounded, 'Bekerja tanpa internet'),
-    (Icons.no_accounts_rounded, 'Tanpa akun dan tanpa login'),
-    (Icons.phone_android_rounded, 'Data hanya tersimpan di perangkat ini'),
-    (Icons.block_rounded, 'Tanpa iklan dan tanpa pelacakan'),
-  ];
+  static List<(IconData, String)> _privacy(AppLocalizations l) => [
+        (Icons.cloud_off_rounded, l.aboutPrivacyOffline),
+        (Icons.no_accounts_rounded, l.aboutPrivacyNoAccount),
+        (Icons.phone_android_rounded, l.aboutPrivacyLocal),
+        (Icons.block_rounded, l.aboutPrivacyNoAds),
+      ];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final muted = theme.textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant);
+    final l = context.l10n;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Tentang Aplikasi')),
+      appBar: AppBar(title: Text(l.aboutTitle)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
         children: [
@@ -65,10 +62,10 @@ class AboutScreen extends StatelessWidget {
                 Text(AppInfo.name,
                     style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
                 const SizedBox(height: 2),
-                Text('Versi ${AppInfo.version}', style: muted),
+                Text(l.versionLabel(AppInfo.version), style: muted),
                 const SizedBox(height: 10),
                 Text(
-                  AppInfo.tagline,
+                  l.appTagline,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.titleSmall?.copyWith(color: scheme.primary),
                 ),
@@ -78,21 +75,17 @@ class AboutScreen extends StatelessWidget {
           const SizedBox(height: 24),
           AppCard(
             child: Text(
-              '${AppInfo.name} adalah aplikasi pencatat keuangan pribadi yang dirancang untuk '
-              'mencatat transaksi harian dengan cepat, terutama pengeluaran kecil yang sering '
-              'terlupa. Nama "Dhuwitku" berasal dari bahasa Jawa yang berarti "uangku".\n\n'
-              'Tujuannya sederhana: catat uangmu dalam hitungan detik, dan pahami kondisi '
-              'keuanganmu hanya dengan sekali lihat.',
+              l.aboutDescription(AppInfo.name),
               style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
             ),
           ),
           const SizedBox(height: 20),
-          const SectionHeader(title: 'Fitur Utama'),
+          SectionHeader(title: l.aboutFeatures),
           AppCard(
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             child: Column(
               children: [
-                for (final (i, f) in _features.indexed) ...[
+                for (final (i, f) in _features(l).indexed) ...[
                   if (i > 0) const Divider(height: 1),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 12),
@@ -121,12 +114,12 @@ class AboutScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          const SectionHeader(title: 'Privasi'),
+          SectionHeader(title: l.aboutPrivacy),
           AppCard(
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: Column(
               children: [
-                for (final p in _privacy)
+                for (final p in _privacy(l))
                   ListTile(
                     dense: true,
                     leading: Icon(p.$1, color: scheme.primary),
@@ -139,15 +132,14 @@ class AboutScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Text(
-              'Karena data hanya ada di perangkat ini, gunakan Pengaturan → Cadangkan database '
-              'secara berkala agar datamu aman jika HP hilang atau diganti.',
+              l.aboutBackupTip,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
             ),
           ),
           const SizedBox(height: 24),
           Center(
-            child: Text('Dibuat dengan Flutter · Mata uang: Rupiah (IDR)',
+            child: Text(l.aboutFooter,
                 style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
           ),
         ],

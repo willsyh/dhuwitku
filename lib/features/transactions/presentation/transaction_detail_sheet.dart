@@ -5,6 +5,8 @@ import '../../../app/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/messenger.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../../l10n/l10n.dart';
+import '../../../l10n/labels.dart';
 import '../../settings/presentation/settings_providers.dart';
 import '../domain/finance_transaction.dart';
 import 'quick_add_sheet.dart';
@@ -29,20 +31,20 @@ Future<bool> confirmDeleteTransaction(
   final ok = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Hapus transaksi?'),
+      title: Text(context.l10n.deleteTransactionQ),
       content: Text(
         '${t.title} · ${money.format(t.amount)}\n${DateFormats.date.format(t.date)}\n\n'
-        'Transaksi yang dihapus tidak dapat dikembalikan.',
+        '${context.l10n.deleteCannotUndo}',
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
+        TextButton(onPressed: () => Navigator.pop(context, false), child: Text(context.l10n.cancel)),
         FilledButton(
           style: FilledButton.styleFrom(
             backgroundColor: AppColors.expense,
             minimumSize: const Size(64, 40),
           ),
           onPressed: () => Navigator.pop(context, true),
-          child: const Text('Hapus'),
+          child: Text(context.l10n.delete),
         ),
       ],
     ),
@@ -50,7 +52,7 @@ Future<bool> confirmDeleteTransaction(
   if (ok != true) return false;
   try {
     await ref.read(transactionRepositoryProvider).delete(t.id);
-    showAppSnack('Transaksi dihapus.');
+    showAppSnack(l10n.transactionDeleted);
     return true;
   } catch (e) {
     showAppSnack(errorMessage(e), kind: SnackKind.error);
@@ -68,6 +70,7 @@ class _TransactionDetail extends ConsumerWidget {
     final theme = Theme.of(context);
     final money = ref.watch(moneyFormatterProvider);
     final color = t.isIncome ? AppColors.income : AppColors.expense;
+    final l = context.l10n;
 
     Widget row(IconData icon, String label, String value) => Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -102,21 +105,22 @@ class _TransactionDetail extends ConsumerWidget {
                 ?.copyWith(color: color, fontFeatures: tabularFigures),
           ),
           if (t.isDemo)
-            const Padding(
-              padding: EdgeInsets.only(top: 8),
-              child: Chip(label: Text('Data demo')),
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Chip(label: Text(l.demoData)),
             ),
           const SizedBox(height: 16),
           const Divider(),
           const SizedBox(height: 8),
-          row(Icons.swap_vert_rounded, 'Jenis', t.type.label),
-          row(Icons.category_outlined, 'Kategori', t.category.name),
-          row(Icons.calendar_today_outlined, 'Tanggal', DateFormats.dateTime.format(t.date)),
-          row(Icons.account_balance_wallet_outlined, 'Metode', t.paymentMethod ?? '-'),
-          row(Icons.notes_rounded, 'Catatan', t.description ?? '-'),
-          row(Icons.history_rounded, 'Dicatat', DateFormats.dateTime.format(t.createdAt)),
+          row(Icons.swap_vert_rounded, l.type, t.type.label),
+          row(Icons.category_outlined, l.category, t.category.label),
+          row(Icons.calendar_today_outlined, l.date, DateFormats.dateTime.format(t.date)),
+          row(Icons.account_balance_wallet_outlined, l.method,
+              t.paymentMethod == null ? '-' : paymentLabel(t.paymentMethod!)),
+          row(Icons.notes_rounded, l.note, t.description ?? '-'),
+          row(Icons.history_rounded, l.recordedAt, DateFormats.dateTime.format(t.createdAt)),
           if (t.updatedAt.difference(t.createdAt).inSeconds.abs() > 1)
-            row(Icons.edit_calendar_outlined, 'Diperbarui', DateFormats.dateTime.format(t.updatedAt)),
+            row(Icons.edit_calendar_outlined, l.updatedAt, DateFormats.dateTime.format(t.updatedAt)),
           const SizedBox(height: 20),
           Row(
             children: [
@@ -128,7 +132,7 @@ class _TransactionDetail extends ConsumerWidget {
                     if (deleted && context.mounted) Navigator.pop(context);
                   },
                   icon: const Icon(Icons.delete_outline_rounded),
-                  label: const Text('Hapus'),
+                  label: Text(l.delete),
                 ),
               ),
               const SizedBox(width: 12),
@@ -143,7 +147,7 @@ class _TransactionDetail extends ConsumerWidget {
                     showQuickAddSheet(nav.context, initial: t);
                   },
                   icon: const Icon(Icons.edit_outlined),
-                  label: const Text('Ubah'),
+                  label: Text(l.edit),
                 ),
               ),
             ],

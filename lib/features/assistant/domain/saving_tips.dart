@@ -1,4 +1,5 @@
 import '../../../core/utils/formatters.dart';
+import '../../../l10n/l10n.dart';
 import '../../budgets/domain/budget_calculator.dart';
 import '../../statistics/domain/insights_generator.dart';
 import '../../statistics/domain/statistics_calculator.dart';
@@ -23,16 +24,15 @@ abstract final class SavingTips {
       final c = frequent.first;
       final avg = (c.amount / c.count).round();
       final saving = (avg * 2 * _weeksPerMonth).round();
-      tips.add('${c.category.name} ${c.count}× bulan ini (${money.format(c.amount)}, rata-rata '
-          '${money.format(avg)}). Kurangi 2× seminggu ≈ hemat ${money.format(saving)}/bulan.');
+      tips.add(l10n.tipFrequent(c.category.label, c.count, money.format(c.amount),
+          money.format(avg), money.format(saving)));
     }
 
     // 2. One category dominating.
     final top = byCat.first;
     if (top.share >= 0.35 && byCat.length > 1) {
       final saving = (top.amount * 0.1).round();
-      tips.add('${top.category.name} menyerap ${(top.share * 100).round()}% pengeluaranmu bulan ini. '
-          'Turunkan 10% ≈ hemat ${money.format(saving)}.');
+      tips.add(l10n.tipDominant(top.category.label, (top.share * 100).round(), money.format(saving)));
     }
 
     // 3. Warnings from the regular insights (increases, budget pace, overspending).
@@ -59,14 +59,12 @@ abstract final class SavingTips {
     // 4. Category budgets already under pressure.
     final tight = statuses.where((s) => !s.isOverall && s.level.needsAttention).firstOrNull;
     if (tight != null) {
-      tips.add('Anggaran ${tight.label} sudah ${tight.percent}% terpakai. '
-          'Tahan dulu pengeluaran ${tight.label} sampai akhir bulan.');
+      tips.add(l10n.tipTightBudget(tight.label, tight.percent));
     }
 
     // 5. No budget yet.
     if (overall == null) {
-      tips.add('Kamu belum punya anggaran bulanan. Atur di menu Anggaran supaya dapat peringatan '
-          'otomatis saat pengeluaran mendekati batas.');
+      tips.add(l10n.tipNoBudget);
     }
 
     return tips.take(4).toList();

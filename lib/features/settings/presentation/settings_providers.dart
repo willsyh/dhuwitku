@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../app/theme/festive_theme.dart';
 import '../../../core/database/database_provider.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../l10n/l10n.dart';
 import '../data/settings_repository.dart';
 import '../domain/currency.dart';
 
@@ -45,6 +46,27 @@ class FestiveThemeNotifier extends Notifier<FestiveTheme> {
 
 final festiveThemeProvider =
     NotifierProvider<FestiveThemeNotifier, FestiveTheme>(FestiveThemeNotifier.new);
+
+/// App language, stored on the device. Applying it also switches the text used
+/// by non-widget code (see `l10n`).
+class LanguageNotifier extends Notifier<AppLanguage> {
+  static const _key = 'language';
+
+  @override
+  AppLanguage build() {
+    final language = AppLanguage.fromCode(ref.watch(sharedPreferencesProvider).getString(_key));
+    applyLanguage(language);
+    return language;
+  }
+
+  Future<void> set(AppLanguage language) async {
+    applyLanguage(language);
+    state = language;
+    await ref.read(sharedPreferencesProvider).setString(_key, language.code);
+  }
+}
+
+final languageProvider = NotifierProvider<LanguageNotifier, AppLanguage>(LanguageNotifier.new);
 
 final settingsRepositoryProvider =
     Provider((ref) => SettingsRepository(ref.watch(databaseProvider)));

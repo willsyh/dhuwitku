@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/transaction_type.dart';
 import '../../../core/database/app_database.dart';
+import '../../../l10n/l10n.dart';
 import '../domain/category.dart';
 
 class CategoryRepository {
@@ -75,17 +76,17 @@ class CategoryRepository {
               ..where((c) => c.type.equals(target.type)))
             .get();
         if (sameType.length <= 1) {
-          throw const CategoryException('Minimal harus ada satu kategori untuk jenis ini.');
+          throw CategoryException(l10n.errLastCategory);
         }
 
         final used = await transactionCount(categoryId);
         if (used > 0) {
           if (reassignTo == null || reassignTo == categoryId) {
-            throw const CategoryException('Pilih kategori pengganti untuk transaksi yang ada.');
+            throw CategoryException(l10n.errPickReplacement);
           }
           final replacement = sameType.where((c) => c.id == reassignTo).firstOrNull;
           if (replacement == null) {
-            throw const CategoryException('Kategori pengganti harus berjenis sama.');
+            throw CategoryException(l10n.errReplacementType);
           }
           await (_db.update(_db.transactions)..where((t) => t.categoryId.equals(categoryId)))
               .write(TransactionsCompanion(
@@ -99,15 +100,15 @@ class CategoryRepository {
 
   Future<String> _validateName(String name, TransactionType type, {int? excludeId}) async {
     final clean = name.trim().replaceAll(RegExp(r'\s+'), ' ');
-    if (clean.isEmpty) throw const CategoryException('Nama kategori wajib diisi.');
+    if (clean.isEmpty) throw CategoryException(l10n.errCategoryNameRequired);
     if (clean.length > AppLimits.maxCategoryNameLength) {
-      throw const CategoryException('Nama kategori maksimal 40 karakter.');
+      throw CategoryException(l10n.errCategoryNameTooLong(AppLimits.maxCategoryNameLength));
     }
     final existing = await (_db.select(_db.categories)
           ..where((c) => c.type.equals(type.name) & c.name.lower().equals(clean.toLowerCase())))
         .get();
     if (existing.any((c) => c.id != excludeId)) {
-      throw const CategoryException('Kategori dengan nama ini sudah ada.');
+      throw CategoryException(l10n.errCategoryExists);
     }
     return clean;
   }

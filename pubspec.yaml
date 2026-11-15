@@ -72,6 +72,8 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  # Generates lib/l10n/gen/app_localizations.dart from lib/l10n/*.arb (see l10n.yaml).
+  generate: true
 
   # Festive banners for the balance card (one per FestiveTheme, WebP).
   assets:

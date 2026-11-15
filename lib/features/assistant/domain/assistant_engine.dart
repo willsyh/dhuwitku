@@ -1,5 +1,6 @@
 import '../../../core/constants/transaction_type.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../l10n/l10n.dart';
 import '../../budgets/domain/budget.dart';
 import '../../budgets/domain/budget_calculator.dart';
 import '../../categories/domain/category.dart';
@@ -26,12 +27,8 @@ class AssistantData {
 /// Builds Indonesian replies for questions, tips, help and unknown input.
 /// Pure and deterministic: every number comes from the user's own data.
 abstract final class AssistantEngine {
-  static const helpText = 'Aku bisa bantu:\n'
-      '• Catat: "kopi 25rb", "gaji 6,5jt kemarin", "parkir 5000 tunai"\n'
-      '• Tanya: "pengeluaran bulan ini?", "kopi minggu ini", "saldo?"\n'
-      '• Anggaran: "sisa anggaran?", "anggaran makan"\n'
-      '• Analisis: "kategori terbesar", "tips hemat"\n'
-      '• Ubah: "ubah yang tadi jadi 30rb", "hapus transaksi terakhir"';
+  /// What the assistant can do, with example commands (active language).
+  static String get helpText => l10n.asstHelp;
 
   static String answer(AssistantIntent intent, AssistantData data, MoneyFormatter money) {
     return switch (intent) {
@@ -40,8 +37,8 @@ abstract final class AssistantEngine {
       QueryBudgetIntent i => _budget(i, data, money),
       QueryTopCategoryIntent i => _top(i, data, money),
       AskTipsIntent() => _tips(data, money),
-      HelpIntent() => 'Hai! $helpText',
-      UnknownIntent() => 'Maaf, aku belum paham. Aku khusus mengurus catatan keuanganmu.\n\n$helpText',
+      HelpIntent() => '${l10n.asstHi} $helpText',
+      UnknownIntent() => '${l10n.asstUnknown}\n\n$helpText',
       // Commands are executed by the controller, not answered here.
       AddTransactionIntent() || EditLastIntent() || DeleteLastIntent() => '',
     };
@@ -55,27 +52,30 @@ abstract final class AssistantEngine {
         ? inRange.toList()
         : inRange.where((t) => t.category.id == i.category!.id).toList();
     final total = scoped.fold<int>(0, (s, t) => s + t.amount);
-    final what = i.category?.name ?? (i.type == TransactionType.income ? 'Pemasukan' : 'Pengeluaran');
+    final l = l10n;
+    final what = i.category?.label ?? i.type.label;
     final range = i.range.label;
 
     if (scoped.isEmpty) {
-      return i.category == null
-          ? 'Belum ada ${what.toLowerCase()} $range.'
-          : 'Belum ada transaksi $what $range.';
+      return i.category != null
+          ? l.asstNoCategoryTx(what, range)
+          : i.type == TransactionType.income
+              ? l.asstNoIncome(range)
+              : l.asstNoExpense(range);
     }
 
-    final buffer = StringBuffer('$what $range ${money.format(total)} (${scoped.length} transaksi).');
+    final buffer = StringBuffer(l.asstTotal(what, range, money.format(total), scoped.length));
     if (i.category != null) {
-      buffer.write(' Rata-rata ${money.format((total / scoped.length).round())} per transaksi.');
+      buffer.write(' ${l.asstAvgPerTx(money.format((total / scoped.length).round()))}');
     } else if (i.type == TransactionType.expense) {
       final byCat = StatisticsCalculator.expenseByCategory(d.transactions, _period(i.range));
       if (byCat.isNotEmpty) {
         final top = byCat.first;
         buffer.write(
-            '\nTerbesar: ${top.category.name} ${money.format(top.amount)} (${(top.share * 100).round()}%).');
+            '\n${l.asstTop(top.category.label, money.format(top.amount), (top.share * 100).round())}');
       }
       final days = _period(i.range).elapsedDays(d.now);
-      if (days > 1) buffer.write('\nRata-rata ${money.format((total / days).round())} per hari.');
+      if (days > 1) buffer.write('\n${l.asstAvgPerDay(money.format((total / days).round()))}');
     }
     return buffer.toString();
   }
@@ -91,9 +91,8 @@ abstract final class AssistantEngine {
     }
     final month = StatisticsCalculator.summarize(
         d.transactions, Period.of(PeriodType.month, d.now), now: d.now);
-    return 'Saldo kamu ${money.format(income - expense)}.\n'
-        'Total pemasukan ${money.format(income)}, pengeluaran ${money.format(expense)}.\n'
-        'Bulan ini: masuk ${money.format(month.income)}, keluar ${money.format(month.expense)}.';
+    return l10n.asstBalance(money.format(income - expense), money.format(income),
+        money.format(expense), money.format(month.income), money.format(month.expense));
   }
 
   static String _budget(QueryBudgetIntent i, AssistantData d, MoneyFormatter money) {
@@ -106,25 +105,25 @@ abstract final class AssistantEngine {
     );
     String line(BudgetStatus s) {
       final state = switch (s.level) {
-        BudgetLevel.safe => 'aman',
-        BudgetLevel.caution => 'waspada',
-        BudgetLevel.danger => 'hampir habis',
-        BudgetLevel.exceeded => 'terlampaui',
+        BudgetLevel.safe => l10n.asstStateSafe,
+        BudgetLevel.caution => l10n.asstStateCaution,
+        BudgetLevel.danger => l10n.asstStateDanger,
+        BudgetLevel.exceeded => l10n.asstStateExceeded,
       };
       final left = s.remaining >= 0
-          ? 'sisa ${money.format(s.remaining)}'
-          : 'lebih ${money.format(-s.remaining)}';
-      return '${s.label}: $left dari ${money.format(s.limit)} (${s.percent}%, $state).';
+          ? l10n.asstLeft(money.format(s.remaining))
+          : l10n.asstOver(money.format(-s.remaining));
+      return l10n.asstBudgetLine(s.label, left, money.format(s.limit), s.percent, state);
     }
 
     if (i.category != null) {
       final s = statuses.where((s) => s.category?.id == i.category!.id).firstOrNull;
       return s == null
-          ? 'Belum ada batas anggaran untuk ${i.category!.name}. Atur di menu Anggaran.'
+          ? l10n.asstNoBudgetFor(i.category!.label)
           : line(s);
     }
     if (statuses.isEmpty) {
-      return 'Kamu belum mengatur anggaran. Buka Pengaturan → Anggaran untuk mengatur anggaran bulanan.';
+      return l10n.asstNoBudget;
     }
     final shown = [
       ...statuses.where((s) => s.isOverall),
@@ -135,19 +134,19 @@ abstract final class AssistantEngine {
 
   static String _top(QueryTopCategoryIntent i, AssistantData d, MoneyFormatter money) {
     final byCat = StatisticsCalculator.expenseByCategory(d.transactions, _period(i.range));
-    if (byCat.isEmpty) return 'Belum ada pengeluaran ${i.range.label}.';
+    if (byCat.isEmpty) return l10n.asstNoExpense(i.range.label);
     final lines = [
       for (final (n, c) in byCat.take(3).indexed)
-        '${n + 1}. ${c.category.name} ${money.format(c.amount)} (${(c.share * 100).round()}%)',
+        '${n + 1}. ${c.category.label} ${money.format(c.amount)} (${(c.share * 100).round()}%)',
     ];
-    return 'Pengeluaran terbesar ${i.range.label}:\n${lines.join('\n')}';
+    return '${l10n.asstTopList(i.range.label)}\n${lines.join('\n')}';
   }
 
   static String _tips(AssistantData d, MoneyFormatter money) {
     final tips = SavingTips.generate(d, money);
     if (tips.isEmpty) {
-      return 'Belum cukup data untuk memberi saran. Catat pengeluaranmu beberapa hari dulu, ya.';
+      return l10n.asstNoTips;
     }
-    return 'Saran dari pola pengeluaranmu:\n${tips.map((t) => '• $t').join('\n')}';
+    return '${l10n.asstTipsHeader}\n${tips.map((t) => '• $t').join('\n')}';
   }
 }

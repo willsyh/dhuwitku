@@ -1,0 +1,996 @@
+{
+  "@@locale": "id",
+  "today": "Hari ini",
+  "yesterday": "Kemarin",
+  "typeExpense": "Pengeluaran",
+  "typeIncome": "Pemasukan",
+  "catFood": "Makan",
+  "catCoffee": "Kopi",
+  "catFuel": "Bensin",
+  "catParking": "Parkir",
+  "catTransport": "Transportasi",
+  "catGroceries": "Belanja Harian",
+  "catShopping": "Belanja",
+  "catEntertainment": "Hiburan",
+  "catBills": "Tagihan",
+  "catHealth": "Kesehatan",
+  "catOther": "Lainnya",
+  "catSalary": "Gaji",
+  "catAllowance": "Uang Saku",
+  "catFreelance": "Freelance",
+  "catBusiness": "Bisnis",
+  "catInvestment": "Investasi",
+  "payCash": "Tunai",
+  "payCreditCard": "Kartu Kredit",
+  "payTransfer": "Transfer",
+  "payDebit": "Debit",
+  "payEwallet": "E-Wallet",
+  "errAmountZero": "Masukkan jumlah lebih dari 0",
+  "errAmountTooLarge": "Jumlah terlalu besar",
+  "errPickCategory": "Pilih kategori terlebih dahulu",
+  "errNoteTooLong": "Catatan maksimal {max} karakter",
+  "errInvalidDate": "Tanggal tidak valid",
+  "@errNoteTooLong": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "periodDaily": "Harian",
+  "periodWeekly": "Mingguan",
+  "periodMonthly": "Bulanan",
+  "periodYearly": "Tahunan",
+  "appTagline": "Catat uangmu dalam hitungan detik.",
+  "festiveNone": "Tidak ada",
+  "festiveIdulFitri": "Idul Fitri",
+  "festiveIdulFitriGreeting": "Selamat Idul Fitri",
+  "festiveIdulFitriSubtitle": "Mohon maaf lahir dan batin",
+  "festiveIdulAdha": "Idul Adha",
+  "festiveIdulAdhaGreeting": "Selamat Idul Adha",
+  "festiveIdulAdhaSubtitle": "Semoga berkah dan penuh makna",
+  "festiveImlek": "Imlek",
+  "festiveImlekGreeting": "Gong Xi Fa Cai",
+  "festiveImlekSubtitle": "Selamat Tahun Baru Imlek",
+  "festivePaskah": "Paskah",
+  "festivePaskahGreeting": "Selamat Paskah",
+  "festivePaskahSubtitle": "Damai dan sukacita untukmu",
+  "festiveNatal": "Natal",
+  "festiveNatalGreeting": "Selamat Natal",
+  "festiveNatalSubtitle": "Damai dan sukacita untukmu",
+  "festiveTahunBaru": "Tahun Baru",
+  "festiveTahunBaruGreeting": "Selamat Tahun Baru",
+  "festiveTahunBaruSubtitle": "Awal baru, catatan keuangan baru",
+  "festiveValentine": "Valentine",
+  "festiveValentineGreeting": "Selamat Hari Valentine",
+  "festiveValentineSubtitle": "Hari penuh kasih sayang",
+  "festiveRamadan": "Ramadan",
+  "festiveRamadanGreeting": "Marhaban ya Ramadan",
+  "festiveRamadanSubtitle": "Selamat menunaikan ibadah puasa",
+  "festiveNyepi": "Nyepi",
+  "festiveNyepiGreeting": "Selamat Hari Raya Nyepi",
+  "festiveNyepiSubtitle": "Damai dalam keheningan",
+  "festiveWaisak": "Waisak",
+  "festiveWaisakGreeting": "Selamat Hari Raya Waisak",
+  "festiveWaisakSubtitle": "Semoga semua makhluk berbahagia",
+  "festiveKartini": "Hari Kartini",
+  "festiveKartiniGreeting": "Selamat Hari Kartini",
+  "festiveKartiniSubtitle": "Habis gelap terbitlah terang",
+  "festiveKemerdekaan": "Kemerdekaan RI",
+  "festiveKemerdekaanGreeting": "Dirgahayu Indonesia",
+  "festiveKemerdekaanSubtitle": "Merdeka! 17 Agustus",
+  "festiveHalloween": "Halloween",
+  "festiveHalloweenGreeting": "Happy Halloween",
+  "festiveHalloweenSubtitle": "Awas, pengeluaran seram!",
+  "festiveHariIbu": "Hari Ibu",
+  "festiveHariIbuGreeting": "Selamat Hari Ibu",
+  "festiveHariIbuSubtitle": "Terima kasih, Ibu",
+  "currencyIdr": "Rupiah Indonesia",
+  "currencyUsd": "Dolar AS",
+  "currencySgd": "Dolar Singapura",
+  "currencyMyr": "Ringgit Malaysia",
+  "currencyEur": "Euro",
+  "errorTitle": "Terjadi kesalahan",
+  "retry": "Coba lagi",
+  "previous": "Sebelumnya",
+  "next": "Berikutnya",
+  "errDatabase": "Gagal menyimpan ke database. Coba lagi.",
+  "navHome": "Beranda",
+  "navTransactions": "Transaksi",
+  "navStatistics": "Statistik",
+  "navSettings": "Pengaturan",
+  "addTransactionTooltip": "Catat transaksi",
+  "demoRemoved": "{count} transaksi demo dihapus.",
+  "dashBudgetAlerts": "Peringatan Anggaran",
+  "manage": "Kelola",
+  "dashMonthlySummary": "Ringkasan Bulanan",
+  "dashRecent": "Transaksi Terakhir",
+  "seeAll": "Lihat semua",
+  "noTransactionsYet": "Belum ada transaksi",
+  "dashEmptyMessage": "Catat pengeluaran pertamamu, hanya butuh beberapa detik.",
+  "recordNow": "Catat Sekarang",
+  "greetingMorning": "Selamat pagi",
+  "greetingAfternoon": "Selamat siang",
+  "greetingEvening": "Selamat sore",
+  "greetingNight": "Selamat malam",
+  "scanReceipt": "Scan struk",
+  "assistantBarTitle": "Tanya atau catat lewat chat",
+  "assistantBarHint": "Contoh: \"kopi 25rb\" · \"pengeluaran bulan ini?\"",
+  "demoActive": "Mode demo aktif: sebagian data adalah contoh.",
+  "delete": "Hapus",
+  "totalBalance": "Total Saldo",
+  "incomeThisMonth": "Pemasukan bulan ini",
+  "expenseThisMonth": "Pengeluaran bulan ini",
+  "setMonthlyBudget": "Atur anggaran bulanan",
+  "budgetRemaining": "Sisa anggaran {amount}",
+  "budgetExceededBy": "Anggaran terlampaui {amount}",
+  "history": "Riwayat",
+  "avgPerDay": "Rata-rata / hari",
+  "topCategory": "Kategori terbesar",
+  "transactionsThisMonth": "Transaksi bulan ini",
+  "last6Months": "6 bulan terakhir",
+  "legendIn": "Masuk",
+  "legendOut": "Keluar",
+  "chartEmpty": "Grafik muncul setelah ada transaksi.",
+  "@demoRemoved": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@budgetRemaining": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@budgetExceededBy": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "transactionDate": "Tanggal transaksi",
+  "categoryFallback": "kategori",
+  "txSaved": "{type} {amount} tersimpan.",
+  "txUpdated": "{type} {amount} diperbarui.",
+  "editTransaction": "Ubah Transaksi",
+  "amount": "Jumlah",
+  "note": "Catatan",
+  "noteHint": "Contoh: Nasi goreng, kopi susu…",
+  "saveChanges": "Simpan Perubahan",
+  "save": "Simpan",
+  "transactionType": "Jenis transaksi",
+  "newCategoryShort": "Baru",
+  "paymentMethod": "Metode pembayaran",
+  "clearPaymentMethod": "Hapus metode",
+  "method": "Metode",
+  "tripleZero": "Tiga nol",
+  "backspaceHint": "Hapus angka. Tahan untuk menghapus semua",
+  "@txSaved": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@txUpdated": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteTransactionQ": "Hapus transaksi?",
+  "deleteCannotUndo": "Transaksi yang dihapus tidak dapat dikembalikan.",
+  "cancel": "Batal",
+  "transactionDeleted": "Transaksi dihapus.",
+  "demoData": "Data demo",
+  "type": "Jenis",
+  "category": "Kategori",
+  "date": "Tanggal",
+  "recordedAt": "Dicatat",
+  "updatedAt": "Diperbarui",
+  "edit": "Ubah",
+  "sortNewest": "Terbaru dulu",
+  "sortOldest": "Terlama dulu",
+  "searchHint": "Cari catatan atau kategori",
+  "clearSearch": "Hapus pencarian",
+  "noMatchingTransactions": "Tidak ada transaksi yang cocok",
+  "noMatchingHint": "Coba ubah kata kunci atau filter.",
+  "resetFilter": "Reset filter",
+  "historyEmptyMessage": "Tekan tombol + untuk mencatat transaksi pertamamu.",
+  "recordTransaction": "Catat Transaksi",
+  "all": "Semua",
+  "pickDateRange": "Pilih rentang tanggal",
+  "apply": "Terapkan",
+  "reset": "Reset",
+  "allCategories": "Semua kategori",
+  "transactionCount": "{count} transaksi",
+  "@transactionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "manageCategories": "Kelola Kategori",
+  "noCategories": "Belum ada kategori",
+  "defaultCategory": "Bawaan",
+  "deleteCategory": "Hapus kategori",
+  "errLastCategory": "Minimal harus ada satu kategori untuk jenis ini.",
+  "deleteCategoryQ": "Hapus \"{name}\"?",
+  "deleteCategoryUnused": "Kategori ini belum digunakan transaksi apa pun. Anggaran untuk kategori ini juga akan dihapus.",
+  "deleteCategoryUsed": "{count} transaksi menggunakan kategori ini. Pindahkan transaksi tersebut ke:",
+  "categoryDeleted": "Kategori \"{name}\" dihapus.",
+  "categoryAdded": "Kategori ditambahkan.",
+  "categoryUpdated": "Kategori diperbarui.",
+  "newCategory": "Kategori Baru",
+  "editCategory": "Ubah Kategori",
+  "categoryName": "Nama kategori",
+  "color": "Warna",
+  "icon": "Ikon",
+  "saveCategory": "Simpan Kategori",
+  "@deleteCategoryQ": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@deleteCategoryUsed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@categoryDeleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "budgets": "Anggaran",
+  "budgetCarryHint": "Anggaran berlaku mulai bulan yang dipilih dan terus berlanjut ke bulan berikutnya sampai diubah.",
+  "monthlyBudget": "Anggaran Bulanan",
+  "setTotalBudget": "Atur anggaran total untuk bulan ini",
+  "categoryLimits": "Batas per Kategori",
+  "add": "Tambah",
+  "noCategoryLimits": "Belum ada batas kategori",
+  "categoryLimitExample": "Contoh: batasi Kopi Rp 300.000 per bulan.",
+  "addLimit": "Tambah batas",
+  "pickCategory": "Pilih kategori",
+  "budgetSaved": "Anggaran {label} disimpan.",
+  "deleteBudgetQ": "Hapus anggaran?",
+  "deleteBudgetBody": "{label} tidak lagi berlaku mulai {month}. Anggaran bulan-bulan sebelumnya tetap tersimpan.",
+  "budgetDeleted": "Anggaran {label} dihapus.",
+  "startingFrom": "Mulai {month}",
+  "levelSafe": "Aman",
+  "levelCaution": "Waspada",
+  "levelDanger": "Hampir habis",
+  "levelExceeded": "Terlampaui",
+  "usedPercentA11y": "Terpakai {percent} persen",
+  "budgetAmount": "Anggaran {amount}",
+  "deleteBudget": "Hapus anggaran",
+  "spentAmount": "Terpakai {amount}",
+  "leftAmount": "Sisa {amount}",
+  "overAmount": "Lebih {amount}",
+  "budgetWarnCaution": "{label} sudah terpakai {percent}%.",
+  "budgetWarnDanger": "{label} hampir habis ({percent}%).",
+  "budgetWarnExceeded": "{label} terlampaui {percent}%!",
+  "budgetFor": "Anggaran {name}",
+  "errBudgetZero": "Masukkan anggaran lebih dari 0.",
+  "errBudgetTooLarge": "Anggaran terlalu besar.",
+  "errPickReplacement": "Pilih kategori pengganti untuk transaksi yang ada.",
+  "errReplacementType": "Kategori pengganti harus berjenis sama.",
+  "errCategoryNameRequired": "Nama kategori wajib diisi.",
+  "errCategoryNameTooLong": "Nama kategori maksimal {max} karakter.",
+  "errCategoryExists": "Kategori dengan nama ini sudah ada.",
+  "errTransactionNotFound": "Transaksi tidak ditemukan.",
+  "errCategoryNotFound": "Kategori tidak ditemukan.",
+  "errCategoryTypeMismatch": "Kategori tidak sesuai dengan jenis transaksi.",
+  "@budgetSaved": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@deleteBudgetBody": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "@budgetDeleted": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@startingFrom": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "@usedPercentA11y": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@budgetAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@spentAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@leftAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@overAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@budgetWarnCaution": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@budgetWarnDanger": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@budgetWarnExceeded": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@budgetFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@errCategoryNameTooLong": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "noDataYet": "Belum ada data",
+  "statsEmptyMessage": "Statistik dan insight akan muncul setelah kamu mencatat transaksi.",
+  "trendLast7Days": "Pengeluaran 7 hari terakhir",
+  "trendDailyThisWeek": "Pengeluaran harian minggu ini",
+  "trendDaily": "Tren pengeluaran harian",
+  "trendPerMonth": "Pengeluaran per bulan",
+  "net": "Selisih",
+  "insightsFor": "Insight {month}",
+  "expenseByCategory": "Pengeluaran per Kategori",
+  "noExpenseInPeriod": "Tidak ada pengeluaran pada periode ini.",
+  "incomeVsExpense": "Pemasukan vs Pengeluaran",
+  "monthlyExpenseTrend": "Tren Pengeluaran Bulanan",
+  "total": "Total",
+  "@insightsFor": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "insThisMonth": "bulan ini",
+  "insMonthOf": "bulan {month}",
+  "insNoTransactions": "Belum ada transaksi {period}. Catat transaksi pertamamu!",
+  "insTopCategory": "Pengeluaran terbesar {period} berasal dari kategori {category} ({amount}, {percent}%).",
+  "insCompareSamePeriod": "periode yang sama bulan lalu",
+  "insComparePrevMonth": "bulan sebelumnya",
+  "insTotalUp": "Total pengeluaran naik {percent}% dibandingkan {comparison}.",
+  "insTotalDown": "Hebat! Total pengeluaran turun {percent}% dibandingkan {comparison}.",
+  "insCategoryUp": "Pengeluaran {category} meningkat {percent}% dibandingkan {comparison}.",
+  "insBudgetExceeded": "Pengeluaran sudah melebihi anggaran bulanan sebesar {amount}.",
+  "insBudgetUsed": "Kamu sudah menggunakan {percent}% dari anggaran bulanan.",
+  "insProjection": "Dengan pola saat ini, pengeluaran bulan ini diperkirakan {amount}, melebihi anggaran.",
+  "insSavingRate": "Kamu menyisihkan {percent}% dari pemasukan {period}.",
+  "insOverspend": "Pengeluaran {period} lebih besar {amount} dari pemasukan.",
+  "insMostFrequent": "Kamu paling sering mencatat {category} ({count} kali) {period}, rata-rata {amount} per transaksi.",
+  "insAvgDaily": "Rata-rata pengeluaran harian {period} {amount}.",
+  "@insMonthOf": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "@insNoTransactions": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "@insTopCategory": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      },
+      "category": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@insTotalUp": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "comparison": {
+        "type": "String"
+      }
+    }
+  },
+  "@insTotalDown": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "comparison": {
+        "type": "String"
+      }
+    }
+  },
+  "@insCategoryUp": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      },
+      "comparison": {
+        "type": "String"
+      }
+    }
+  },
+  "@insBudgetExceeded": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@insBudgetUsed": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@insProjection": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@insSavingRate": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "@insOverspend": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@insMostFrequent": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "period": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@insAvgDaily": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "theme": "Tema",
+  "themeSystem": "Ikuti sistem",
+  "themeLight": "Terang",
+  "themeDark": "Gelap",
+  "festiveTheme": "Tema perayaan",
+  "currency": "Mata uang",
+  "currencyNote": "Hanya simbol yang berubah. Jumlah tidak dikonversi dan dicatat tanpa desimal.",
+  "language": "Bahasa",
+  "nothingToExport": "Belum ada transaksi untuk diekspor.",
+  "saveCsv": "Simpan CSV",
+  "csvExported": "{count} transaksi diekspor ke CSV.",
+  "saveBackup": "Simpan cadangan",
+  "backupSaved": "Cadangan berhasil disimpan.",
+  "restoreQ": "Pulihkan dari cadangan?",
+  "restoreBody": "Semua data saat ini akan diganti dengan isi file cadangan. Sebaiknya buat cadangan data saat ini terlebih dahulu.",
+  "pickFile": "Pilih File",
+  "pickBackupFile": "Pilih file cadangan",
+  "restoreDone": "Data berhasil dipulihkan.",
+  "loadDemoQ": "Muat data demo?",
+  "loadDemoBody": "Menambahkan contoh transaksi 90 hari terakhir untuk mencoba aplikasi. Data demo ditandai dan bisa dihapus kapan saja tanpa mengganggu data aslimu.",
+  "loadDemoAction": "Muat Demo",
+  "demoAdded": "{count} transaksi demo ditambahkan.",
+  "clearAllQ": "Hapus semua data?",
+  "clearAllBody": "Semua transaksi, anggaran, kategori buatanmu, dan pengaturan data akan dihapus permanen. Kategori bawaan akan dibuat ulang.\n\nKetik {word} untuk melanjutkan.",
+  "confirmWord": "HAPUS",
+  "deleteAll": "Hapus Semua",
+  "allDataCleared": "Semua data telah dihapus.",
+  "appearance": "Tampilan",
+  "data": "Data",
+  "exportCsv": "Ekspor transaksi (CSV)",
+  "backupDatabase": "Cadangkan database",
+  "restoreFromBackup": "Pulihkan dari cadangan",
+  "demoMode": "Mode Demo",
+  "removeDemo": "Hapus data demo",
+  "removeDemoHint": "Hanya transaksi berlabel demo yang dihapus",
+  "loadDemo": "Muat data demo",
+  "loadDemoHint": "Contoh transaksi untuk mencoba fitur",
+  "dangerZone": "Zona Bahaya",
+  "clearAllData": "Hapus semua data",
+  "about": "Tentang",
+  "aboutApp": "Tentang Dhuwitku",
+  "appVersion": "Versi aplikasi",
+  "storage": "Penyimpanan",
+  "storageHint": "Semua data tersimpan di perangkat ini (offline)",
+  "@csvExported": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@demoAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@clearAllBody": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutTitle": "Tentang Aplikasi",
+  "versionLabel": "Versi {version}",
+  "aboutDescription": "{app} adalah aplikasi pencatat keuangan pribadi yang dirancang untuk mencatat transaksi harian dengan cepat, terutama pengeluaran kecil yang sering terlupa. Nama \"Dhuwitku\" berasal dari bahasa Jawa yang berarti \"uangku\".\n\nTujuannya sederhana: catat uangmu dalam hitungan detik, dan pahami kondisi keuanganmu hanya dengan sekali lihat.",
+  "aboutFeatures": "Fitur Utama",
+  "aboutFeatureFastTitle": "Catat dalam hitungan detik",
+  "aboutFeatureFastBody": "Masukkan jumlah, pilih kategori, simpan. Cocok untuk pengeluaran kecil harian seperti makan, kopi, bensin, dan parkir.",
+  "aboutFeatureOverviewTitle": "Ringkasan sekilas",
+  "aboutFeatureOverviewBody": "Saldo, pemasukan, dan pengeluaran bulan ini langsung terlihat di Beranda.",
+  "aboutFeatureBudgetTitle": "Anggaran & peringatan",
+  "aboutFeatureBudgetBody": "Atur anggaran bulanan dan batas per kategori. Peringatan muncul saat terpakai 75%, 90%, dan lebih dari 100%.",
+  "aboutFeatureStatsTitle": "Statistik & insight",
+  "aboutFeatureStatsBody": "Grafik harian hingga tahunan, rincian per kategori, dan insight yang dihitung dari datamu sendiri.",
+  "aboutFeatureBackupTitle": "Ekspor & cadangan",
+  "aboutFeatureBackupBody": "Ekspor transaksi ke CSV, cadangkan, dan pulihkan database kapan saja.",
+  "aboutPrivacy": "Privasi",
+  "aboutPrivacyOffline": "Bekerja tanpa internet",
+  "aboutPrivacyNoAccount": "Tanpa akun dan tanpa login",
+  "aboutPrivacyLocal": "Data hanya tersimpan di perangkat ini",
+  "aboutPrivacyNoAds": "Tanpa iklan dan tanpa pelacakan",
+  "aboutBackupTip": "Karena data hanya ada di perangkat ini, gunakan Pengaturan → Cadangkan database secara berkala agar datamu aman jika HP hilang atau diganti.",
+  "aboutFooter": "Dibuat dengan Flutter · Mata uang: Rupiah (IDR)",
+  "csvTime": "Waktu",
+  "csvCreated": "Dibuat",
+  "errBackupInvalid": "File bukan cadangan Dhuwitku yang valid.",
+  "errBackupNoData": "File cadangan tidak berisi data Dhuwitku.",
+  "errBackupNewer": "Cadangan dibuat oleh versi aplikasi yang lebih baru. Perbarui aplikasi terlebih dahulu.",
+  "errBackupCorrupt": "File cadangan rusak.",
+  "errBackupInconsistent": "Data dalam cadangan tidak konsisten.",
+  "errBackupUnreadable": "File cadangan tidak dapat dibaca.",
+  "errCamera": "Kamera tidak dapat dibuka.",
+  "errGallery": "Galeri tidak dapat dibuka.",
+  "errReadReceipt": "Gagal membaca struk. Coba foto ulang.",
+  "receiptNoText": "Tidak ada tulisan yang terbaca. Pastikan struk terang, lurus, dan tidak buram.",
+  "receiptNoTotal": "Total tidak terbaca. Isi jumlah secara manual, lalu periksa data lainnya.",
+  "receiptCheck": "Hasil scan struk. Periksa jumlah, tanggal, dan kategori sebelum menyimpan.",
+  "receiptGuessedTotal": "Label TOTAL tidak ditemukan; jumlah ditebak dari angka terbesar. Periksa sebelum menyimpan.",
+  "scanReceiptTitle": "Scan Struk",
+  "receiptTips": "Foto struk dengan cahaya cukup, posisi lurus, dan tulisan TOTAL terlihat jelas.",
+  "takePhoto": "Ambil foto",
+  "pickFromGallery": "Pilih dari galeri",
+  "receiptPrivacy": "Struk dibaca langsung di HP, tidak dikirim ke internet.",
+  "readingReceipt": "Membaca struk…",
+  "@versionLabel": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "@aboutDescription": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "asstHelp": "Aku bisa bantu:\n• Catat: \"kopi 25rb\", \"gaji 6,5jt kemarin\", \"parkir 5000 tunai\"\n• Tanya: \"pengeluaran bulan ini?\", \"kopi minggu ini\", \"saldo?\"\n• Anggaran: \"sisa anggaran?\", \"anggaran makan\"\n• Analisis: \"kategori terbesar\", \"tips hemat\"\n• Ubah: \"ubah yang tadi jadi 30rb\", \"hapus transaksi terakhir\"",
+  "asstHi": "Hai!",
+  "asstUnknown": "Maaf, aku belum paham. Aku khusus mengurus catatan keuanganmu.",
+  "asstNoCategoryTx": "Belum ada transaksi {category} {range}.",
+  "asstNoIncome": "Belum ada pemasukan {range}.",
+  "asstNoExpense": "Belum ada pengeluaran {range}.",
+  "asstTotal": "{what} {range} {amount} ({count} transaksi).",
+  "asstAvgPerTx": "Rata-rata {amount} per transaksi.",
+  "asstTop": "Terbesar: {category} {amount} ({percent}%).",
+  "asstAvgPerDay": "Rata-rata {amount} per hari.",
+  "asstBalance": "Saldo kamu {balance}.\nTotal pemasukan {income}, pengeluaran {expense}.\nBulan ini: masuk {monthIncome}, keluar {monthExpense}.",
+  "asstStateSafe": "aman",
+  "asstStateCaution": "waspada",
+  "asstStateDanger": "hampir habis",
+  "asstStateExceeded": "terlampaui",
+  "asstLeft": "sisa {amount}",
+  "asstOver": "lebih {amount}",
+  "asstBudgetLine": "{label}: {left} dari {limit} ({percent}%, {state}).",
+  "asstNoBudgetFor": "Belum ada batas anggaran untuk {category}. Atur di menu Anggaran.",
+  "asstNoBudget": "Kamu belum mengatur anggaran. Buka Pengaturan → Anggaran untuk mengatur anggaran bulanan.",
+  "asstTopList": "Pengeluaran terbesar {range}:",
+  "asstNoTips": "Belum cukup data untuk memberi saran. Catat pengeluaranmu beberapa hari dulu, ya.",
+  "asstTipsHeader": "Saran dari pola pengeluaranmu:",
+  "tipFrequent": "{category} {count}× bulan ini ({amount}, rata-rata {avg}). Kurangi 2× seminggu ≈ hemat {saving}/bulan.",
+  "tipDominant": "{category} menyerap {percent}% pengeluaranmu bulan ini. Turunkan 10% ≈ hemat {saving}.",
+  "tipTightBudget": "Anggaran {label} sudah {percent}% terpakai. Tahan dulu pengeluaran {label} sampai akhir bulan.",
+  "tipNoBudget": "Kamu belum punya anggaran bulanan. Atur di menu Anggaran supaya dapat peringatan otomatis saat pengeluaran mendekati batas.",
+  "asstWelcome": "Hai! Aku Asisten Dhuwitku. Ketik transaksi atau tanya soal keuanganmu.",
+  "asstError": "Maaf, terjadi kesalahan: {error}",
+  "asstWhichCategory": "{type} {amount} masuk kategori apa?",
+  "asstSaveFailed": "Maaf, gagal menyimpan: {error}",
+  "asstSaved": "Tersimpan ✓",
+  "asstNothingToEdit": "Belum ada transaksi untuk diubah.",
+  "asstEditHow": "Mau diubah jadi apa? Contoh: \"ubah jadi 30rb\", \"kategorinya jadi makan\", atau \"tanggalnya jadi kemarin\".",
+  "asstUpdated": "Diperbarui ✓",
+  "asstNothingToDelete": "Belum ada transaksi untuk dihapus.",
+  "asstDeleteQ": "Hapus transaksi ini?",
+  "asstDeleteFailed": "Gagal menghapus: {error}",
+  "asstNotDeleted": "Oke, tidak jadi dihapus.",
+  "asstUndoneAdd": "Dibatalkan, transaksi dihapus.",
+  "asstUndoneEdit": "Dibatalkan, data dikembalikan.",
+  "asstUndoFailed": "Gagal membatalkan: {error}",
+  "sugSpendingThisMonth": "Pengeluaran bulan ini",
+  "sugBudgetLeft": "Sisa anggaran",
+  "sugTips": "Tips hemat",
+  "sugTopCategory": "Kategori terbesar",
+  "sugBalance": "Saldo",
+  "sugDeleteLast": "Hapus transaksi terakhir",
+  "asstTitle": "Asisten Dhuwitku",
+  "asstSubtitle": "Offline · data tetap di HP",
+  "asstRestart": "Mulai ulang percakapan",
+  "asstInputHint": "Contoh: kopi 25rb · saldo?",
+  "asstSend": "Kirim",
+  "asstUndone": "Dibatalkan",
+  "undo": "Batalkan",
+  "asstDeleted": "Dihapus",
+  "asstNotDeletedShort": "Tidak jadi dihapus",
+  "previousAmount": "sebelumnya {amount}",
+  "mascotA11y": "Maskot Asisten Dhuwitku",
+  "typingA11y": "Asisten sedang mengetik",
+  "@asstNoCategoryTx": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "@asstNoIncome": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "@asstNoExpense": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "@asstTotal": {
+    "placeholders": {
+      "what": {
+        "type": "String"
+      },
+      "range": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@asstAvgPerTx": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@asstTop": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@asstAvgPerDay": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@asstBalance": {
+    "placeholders": {
+      "balance": {
+        "type": "String"
+      },
+      "income": {
+        "type": "String"
+      },
+      "expense": {
+        "type": "String"
+      },
+      "monthIncome": {
+        "type": "String"
+      },
+      "monthExpense": {
+        "type": "String"
+      }
+    }
+  },
+  "@asstLeft": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@asstOver": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@asstBudgetLine": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      },
+      "state": {
+        "type": "String"
+      }
+    }
+  },
+  "@asstNoBudgetFor": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "@asstTopList": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "@tipFrequent": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "avg": {
+        "type": "String"
+      },
+      "saving": {
+        "type": "String"
+      }
+    }
+  },
+  "@tipDominant": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      },
+      "saving": {
+        "type": "String"
+      }
+    }
+  },
+  "@tipTightBudget": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@asstError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@asstWhichCategory": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@asstSaveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@asstDeleteFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@asstUndoFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@previousAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "rangeToday": "hari ini",
+  "rangeYesterday": "kemarin",
+  "rangeThisWeek": "minggu ini",
+  "rangeLastWeek": "minggu lalu",
+  "rangeThisMonth": "bulan ini",
+  "rangeLastMonth": "bulan lalu",
+  "rangeThisYear": "tahun ini",
+  "rangeLastYear": "tahun lalu",
+  "rangeLastNDays": "{count} hari terakhir",
+  "@rangeLastNDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}

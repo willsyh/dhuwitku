@@ -1,5 +1,6 @@
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/transaction_type.dart';
+import '../../../l10n/l10n.dart';
 import '../../categories/domain/category.dart';
 
 class FinanceTransaction {
@@ -38,7 +39,7 @@ class FinanceTransaction {
   /// Description if given, otherwise the category name.
   String get title {
     final d = description?.trim();
-    return (d == null || d.isEmpty) ? category.name : d;
+    return (d == null || d.isEmpty) ? category.label : d;
   }
 }
 
@@ -62,14 +63,14 @@ class TransactionDraft {
 
   /// Returns a user-facing error message, or null when the draft is valid.
   String? validate() {
-    if (amount <= 0) return 'Masukkan jumlah lebih dari 0';
-    if (amount > AppLimits.maxAmount) return 'Jumlah terlalu besar';
-    if (categoryId == null) return 'Pilih kategori terlebih dahulu';
+    if (amount <= 0) return l10n.errAmountZero;
+    if (amount > AppLimits.maxAmount) return l10n.errAmountTooLarge;
+    if (categoryId == null) return l10n.errPickCategory;
     if ((description?.length ?? 0) > AppLimits.maxDescriptionLength) {
-      return 'Catatan maksimal ${AppLimits.maxDescriptionLength} karakter';
+      return l10n.errNoteTooLong(AppLimits.maxDescriptionLength);
     }
     final latest = DateTime.now().add(const Duration(days: 366));
-    if (date.isAfter(latest) || date.year < 2000) return 'Tanggal tidak valid';
+    if (date.isAfter(latest) || date.year < 2000) return l10n.errInvalidDate;
     return null;
   }
 

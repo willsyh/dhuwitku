@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../../../core/constants/transaction_type.dart';
 import '../../../core/database/app_database.dart';
+import '../../../l10n/l10n.dart';
 import '../../categories/data/category_repository.dart';
 import '../domain/finance_transaction.dart';
 
@@ -75,7 +76,7 @@ class TransactionRepository {
         updatedAt: Value(DateTime.now()),
       ),
     );
-    if (updated == 0) throw const TransactionException('Transaksi tidak ditemukan.');
+    if (updated == 0) throw TransactionException(l10n.errTransactionNotFound);
   }
 
   Future<void> delete(int id) =>
@@ -118,9 +119,9 @@ class TransactionRepository {
     final category = await (_db.select(_db.categories)
           ..where((c) => c.id.equals(draft.categoryId!)))
         .getSingleOrNull();
-    if (category == null) throw const TransactionException('Kategori tidak ditemukan.');
+    if (category == null) throw TransactionException(l10n.errCategoryNotFound);
     if (category.type != draft.type.name) {
-      throw const TransactionException('Kategori tidak sesuai dengan jenis transaksi.');
+      throw TransactionException(l10n.errCategoryTypeMismatch);
     }
   }
 }

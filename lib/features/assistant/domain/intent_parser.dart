@@ -3,11 +3,12 @@ import '../../../core/constants/category_keywords.dart';
 import '../../../core/constants/transaction_type.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/text_match.dart';
+import '../../../l10n/l10n.dart';
 import '../../categories/domain/category.dart';
 import 'assistant_intent.dart';
 
-/// Turns one Indonesian chat message into an [AssistantIntent].
-/// Deterministic and offline; [now] is injectable for tests.
+/// Turns one chat message (Indonesian, or basic English) into an
+/// [AssistantIntent]. Deterministic and offline; [now] is injectable for tests.
 class IntentParser {
   IntentParser({required List<Category> categories, DateTime? now})
       : _categories = [...categories]..sort((a, b) => b.name.length.compareTo(a.name.length)),
@@ -25,7 +26,8 @@ class IntentParser {
     final isQuestion = text.contains('?') || _questionWords.hasMatch(text);
 
     if (_deleteVerb.hasMatch(text) &&
-        (_lastRef.hasMatch(text) || RegExp(r'^(undo|batal(kan|in)?|hapus)$').hasMatch(text))) {
+        (_lastRef.hasMatch(text) ||
+            RegExp(r'^(undo|batal(kan|in)?|hapus|delete|remove|cancel)$').hasMatch(text))) {
       return const DeleteLastIntent();
     }
 
@@ -65,37 +67,54 @@ class IntentParser {
 
   // ---- Vocabulary ------------------------------------------------------------
 
+  // Vocabulary is Indonesian plus basic English, always both (the typing
+  // language doesn't have to match the app language).
   static final _help = RegExp(
     r"^(halo+|hai+|hi+|hello|hallo|hey|hei|p|ping|assalamu'?alaikum|selamat (pagi|siang|sore|malam)|"
-    r'bantuan|help|tolong|menu|mulai|start|bisa apa( saja| aja)?|kamu bisa apa|cara pakai|caranya|\?)[\s!.?]*$',
+    r'bantuan|help|tolong|menu|mulai|start|bisa apa( saja| aja)?|kamu bisa apa|cara pakai|caranya|'
+    r'what can you do|how does (this|it) work|\?)[\s!.?]*$',
   );
   static final _questionWords = RegExp(
-    r'\b(berapa|brp|apa|apakah|gimana|bagaimana|kapan|total|rangkum|ringkas|ringkasan|laporan|rekap|cek|lihat|tampilkan)\b',
+    r'\b(berapa|brp|apa|apakah|gimana|bagaimana|kapan|total|rangkum|ringkas|ringkasan|laporan|rekap|cek|lihat|tampilkan|'
+    r'how much|how many|what|show|summary|report)\b',
   );
-  static final _totalWords =
-      RegExp(r'\b(berapa|brp|total|rangkum|ringkas|ringkasan|laporan|rekap)\b');
-  static final _deleteVerb = RegExp(r'\b(hapus|batalkan|batalin|batal|undo|delete|buang)\b');
-  static final _lastRef = RegExp(r'\b(terakhir|tadi|barusan|transaksi|itu|yang tadi)\b');
-  static final _editVerb =
-      RegExp(r'\b(ubah|ganti|edit|koreksi|ralat|revisi|salah|harusnya|seharusnya|benerin)\b');
+  static final _totalWords = RegExp(
+    r'\b(berapa|brp|total|rangkum|ringkas|ringkasan|laporan|rekap|how much|summary|report)\b',
+  );
+  static final _deleteVerb =
+      RegExp(r'\b(hapus|batalkan|batalin|batal|undo|delete|buang|remove|cancel)\b');
+  static final _lastRef =
+      RegExp(r'\b(terakhir|tadi|barusan|transaksi|itu|yang tadi|last|previous|that|transaction)\b');
+  static final _editVerb = RegExp(
+    r'\b(ubah|ganti|edit|koreksi|ralat|revisi|salah|harusnya|seharusnya|benerin|change|fix|correct|update|should be)\b',
+  );
   static final _editQualifier = RegExp(
-    r'\b(jadi|menjadi|kategori(nya)?|nominal(nya)?|jumlah(nya)?|tanggal(nya)?|harusnya|seharusnya|salah)\b',
+    r'\b(jadi|menjadi|kategori(nya)?|nominal(nya)?|jumlah(nya)?|tanggal(nya)?|harusnya|seharusnya|salah|'
+    r'to|category|amount|date|should be)\b',
   );
-  static final _tipsWords =
-      RegExp(r'\b(tips|tip|saran|hemat|boros|nabung|menabung|ngirit|irit|saving|kurangi)\b');
+  static final _tipsWords = RegExp(
+    r'\b(tips|tip|saran|hemat|boros|nabung|menabung|ngirit|irit|saving|kurangi|advice|save money|'
+    r'overspend(ing)?|spend less)\b',
+  );
   static final _budgetWords = RegExp(r'\b(anggaran|budget|bujet|limit|batas)\b');
-  static final _balanceWords =
-      RegExp(r'\b(saldo|balance|sisa uang|uangku|uang aku|uang saya|total uang|duitku)\b');
-  static final _topWords = RegExp(
-    r'(terbesar|terbanyak|paling (banyak|besar|boros|sering)|kategori apa|buat apa (aja|saja)|untuk apa (aja|saja)|ke ?mana (aja|saja))',
+  static final _balanceWords = RegExp(
+    r'\b(saldo|balance|sisa uang|uangku|uang aku|uang saya|total uang|duitku|my money)\b',
   );
-  static final _spendingWords =
-      RegExp(r'\b(pengeluaran|pemasukan|pendapatan|penghasilan|keluar|masuk|spending|income)\b');
-  static final _incomeQuestion =
-      RegExp(r'\b(pemasukan|pendapatan|penghasilan|masuk|income|gaji|gajian)\b');
+  static final _topWords = RegExp(
+    r'(terbesar|terbanyak|paling (banyak|besar|boros|sering)|kategori apa|buat apa (aja|saja)|untuk apa (aja|saja)|ke ?mana (aja|saja)|'
+    r'biggest|largest|top categor|most spent|spent the most|where did my money go)',
+  );
+  static final _spendingWords = RegExp(
+    r'\b(pengeluaran|pemasukan|pendapatan|penghasilan|keluar|masuk|spending|spent|expenses?|income|earned|earnings)\b',
+  );
+  static final _incomeQuestion = RegExp(
+    r'\b(pemasukan|pendapatan|penghasilan|masuk|income|gaji|gajian|earned|earnings|salary)\b',
+  );
   static final _rangeWords = RegExp(
     r'\b(hari ini|kemarin|minggu (ini|lalu|kemarin)|bulan (ini|lalu|kemarin)|tahun (ini|lalu|kemarin)|\d{1,3} hari terakhir|'
-    r'januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember)\b',
+    r'januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember|'
+    r'today|yesterday|(this|last) (week|month|year)|last \d{1,3} days|'
+    r'january|february|march|may|june|july|august|october|december)\b',
   );
 
   static const _fillers = [
@@ -103,6 +122,9 @@ class IntentParser {
     'lewat', 'catat', 'catet', 'tambah', 'tambahkan', 'input', 'masukin', 'masukkan', 'pengeluaran',
     'sebesar', 'seharga', 'harga', 'rp', 'di', 'ke', 'tolong', 'dong', 'ya', 'yg', 'yang', 'aku', 'saya',
     'habis', 'abis', 'sama', 'nya',
+    // English
+    'bought', 'buy', 'paid', 'pay', 'for', 'on', 'at', 'the', 'a', 'an', 'with', 'using', 'spent',
+    'spend', 'my', 'add', 'record', 'log', 'please', 'i',
   ];
 
   static const _paymentWords = [
@@ -115,11 +137,16 @@ class IntentParser {
     'mei': 5, 'juni': 6, 'jun': 6, 'juli': 7, 'jul': 7, 'agustus': 8, 'agu': 8, 'agt': 8,
     'september': 9, 'sep': 9, 'sept': 9, 'oktober': 10, 'okt': 10, 'november': 11, 'nov': 11,
     'nopember': 11, 'desember': 12, 'des': 12,
+    'january': 1, 'february': 2, 'march': 3, 'may': 5, 'june': 6, 'july': 7, 'august': 8,
+    'aug': 8, 'october': 10, 'oct': 10, 'december': 12, 'dec': 12,
   };
 
   static const _dayNames = {
     'senin': DateTime.monday, 'selasa': DateTime.tuesday, 'rabu': DateTime.wednesday,
     'kamis': DateTime.thursday, 'jumat': DateTime.friday, 'sabtu': DateTime.saturday,
+    'monday': DateTime.monday, 'tuesday': DateTime.tuesday, 'wednesday': DateTime.wednesday,
+    'thursday': DateTime.thursday, 'friday': DateTime.friday, 'saturday': DateTime.saturday,
+    'sunday': DateTime.sunday,
   };
 
   static String _normalize(String s) => s
@@ -132,7 +159,8 @@ class IntentParser {
   // ---- Amounts ---------------------------------------------------------------
 
   static final _amountRe = RegExp(
-    r'(?<![\w.,/])(?:rp\.?\s*)?(\d+(?:[.,]\d+)*)\s*(ribu|rebu|rbu|rb|k|juta|jeti|jt|miliar|milyar|m)?(?![\w/])',
+    r'(?<![\w.,/])(?:rp\.?\s*)?(\d+(?:[.,]\d+)*)\s*'
+    r'(ribu|rebu|rbu|rb|thousand|k|juta|jeti|jt|million|mil|mn|miliar|milyar|billion|bn|m)?(?![\w/])',
   );
 
   /// Amounts in [text] (dates should already be removed).
@@ -151,9 +179,11 @@ class IntentParser {
 
   static int? _parseAmount(String number, String? suffix) {
     final multiplier = switch (suffix) {
-      'ribu' || 'rebu' || 'rbu' || 'rb' || 'k' => 1000,
-      'juta' || 'jeti' || 'jt' => 1000000,
-      'miliar' || 'milyar' || 'm' => 1000000000,
+      'ribu' || 'rebu' || 'rbu' || 'rb' || 'thousand' || 'k' => 1000,
+      'juta' || 'jeti' || 'jt' || 'million' || 'mil' || 'mn' => 1000000,
+      'miliar' || 'milyar' || 'billion' || 'bn' => 1000000000,
+      // "1.5m" means million in English, miliar (billion) in Indonesian.
+      'm' => currentLanguage == AppLanguage.en ? 1000000 : 1000000000,
       _ => 1,
     };
     if (multiplier > 1) {
@@ -180,7 +210,9 @@ class IntentParser {
   }
 
   static int? _amountAfterJadi(String text, List<({int value, int start, int end, bool suffixed})> amounts) {
-    final m = RegExp(r'\b(jadi|menjadi|ke|harusnya|seharusnya)\b').allMatches(text).lastOrNull;
+    final m = RegExp(r'\b(jadi|menjadi|ke|harusnya|seharusnya|to|should be)\b')
+        .allMatches(text)
+        .lastOrNull;
     if (m == null) return null;
     return amounts.where((a) => a.start >= m.end).firstOrNull?.value;
   }
@@ -216,6 +248,15 @@ class IntentParser {
       (RegExp(r'\b(hari )?(senin|selasa|rabu|kamis|jumat|sabtu)( (lalu|kemarin))?\b'),
           (m) => _lastWeekday(_dayNames[m.group(2)!]!)),
       (RegExp(r'\bhari minggu( (lalu|kemarin))?\b'), (_) => _lastWeekday(DateTime.sunday)),
+      // English
+      (RegExp(r'\b(the )?day before yesterday\b'), (_) => _daysAgo(2)),
+      (RegExp(r'\b(\d{1,2}) days? ago\b'), (m) => _daysAgo(int.parse(m.group(1)!))),
+      (RegExp(r'\byesterday( (morning|afternoon|evening|night))?\b'), (_) => _daysAgo(1)),
+      (RegExp(r'\b(today|just now|this (morning|afternoon|evening)|tonight)\b'), (_) => _today),
+      (
+        RegExp(r'\b(on |last )?(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b'),
+        (m) => _lastWeekday(_dayNames[m.group(2)!]!),
+      ),
     ];
 
     for (final (re, toDate) in rules) {
@@ -266,37 +307,42 @@ class IntentParser {
 
   QueryRange _extractRange(String text) {
     final t = _today;
-    final lastDays = RegExp(r'\b(\d{1,3}) hari terakhir\b').firstMatch(text);
+    final l = l10n;
+    final lastDays =
+        RegExp(r'\b(\d{1,3}) hari terakhir\b|\blast (\d{1,3}) days\b').firstMatch(text);
     if (lastDays != null) {
-      final n = int.parse(lastDays.group(1)!).clamp(1, 366);
+      final n = int.parse(lastDays.group(1) ?? lastDays.group(2)!).clamp(1, 366);
       return QueryRange(DateTime(t.year, t.month, t.day - (n - 1)),
-          DateTime(t.year, t.month, t.day + 1), '$n hari terakhir');
+          DateTime(t.year, t.month, t.day + 1), l.rangeLastNDays(n));
     }
-    if (RegExp(r'\bhari ini\b').hasMatch(text)) {
-      return QueryRange(t, DateTime(t.year, t.month, t.day + 1), 'hari ini');
+    if (RegExp(r'\b(hari ini|today)\b').hasMatch(text)) {
+      return QueryRange(t, DateTime(t.year, t.month, t.day + 1), l.rangeToday);
     }
-    if (RegExp(r'\b(kemarin|kmrn|kemaren)\b').hasMatch(text) &&
+    if (RegExp(r'\b(kemarin|kmrn|kemaren|yesterday)\b').hasMatch(text) &&
         !RegExp(r'\b(minggu|bulan|tahun) (kemarin|kmrn|kemaren)\b').hasMatch(text)) {
-      return QueryRange(DateTime(t.year, t.month, t.day - 1), t, 'kemarin');
+      return QueryRange(DateTime(t.year, t.month, t.day - 1), t, l.rangeYesterday);
     }
     final monday = DateTime(t.year, t.month, t.day - (t.weekday - DateTime.monday));
-    if (RegExp(r'\bminggu (lalu|kemarin)\b').hasMatch(text)) {
-      return QueryRange(DateTime(monday.year, monday.month, monday.day - 7), monday, 'minggu lalu');
+    if (RegExp(r'\b(minggu (lalu|kemarin)|last week)\b').hasMatch(text)) {
+      return QueryRange(
+          DateTime(monday.year, monday.month, monday.day - 7), monday, l.rangeLastWeek);
     }
-    if (RegExp(r'\bminggu ini\b').hasMatch(text)) {
-      return QueryRange(monday, DateTime(monday.year, monday.month, monday.day + 7), 'minggu ini');
+    if (RegExp(r'\b(minggu ini|this week)\b').hasMatch(text)) {
+      return QueryRange(
+          monday, DateTime(monday.year, monday.month, monday.day + 7), l.rangeThisWeek);
     }
-    if (RegExp(r'\bbulan (lalu|kemarin)\b').hasMatch(text)) {
-      return QueryRange(DateTime(t.year, t.month - 1), DateTime(t.year, t.month), 'bulan lalu');
+    if (RegExp(r'\b(bulan (lalu|kemarin)|last month)\b').hasMatch(text)) {
+      return QueryRange(DateTime(t.year, t.month - 1), DateTime(t.year, t.month), l.rangeLastMonth);
     }
-    if (RegExp(r'\btahun (lalu|kemarin)\b').hasMatch(text)) {
-      return QueryRange(DateTime(t.year - 1), DateTime(t.year), 'tahun lalu');
+    if (RegExp(r'\b(tahun (lalu|kemarin)|last year)\b').hasMatch(text)) {
+      return QueryRange(DateTime(t.year - 1), DateTime(t.year), l.rangeLastYear);
     }
-    if (RegExp(r'\btahun ini\b').hasMatch(text)) {
-      return QueryRange(DateTime(t.year), DateTime(t.year + 1), 'tahun ini');
+    if (RegExp(r'\b(tahun ini|this year)\b').hasMatch(text)) {
+      return QueryRange(DateTime(t.year), DateTime(t.year + 1), l.rangeThisYear);
     }
     final named = RegExp(
-      r'\b(?:bulan )?(januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|nopember|desember)(?: (\d{4}))?\b',
+      r'\b(?:bulan |in )?(januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|nopember|desember|'
+      r'january|february|march|may|june|july|august|october|december)(?: (\d{4}))?\b',
     ).firstMatch(text);
     if (named != null) {
       final month = _monthNames[named.group(1)!]!;
@@ -305,7 +351,7 @@ class IntentParser {
       final start = DateTime(year, month);
       return QueryRange(start, DateTime(year, month + 1), DateFormats.monthYear.format(start));
     }
-    return QueryRange(DateTime(t.year, t.month), DateTime(t.year, t.month + 1), 'bulan ini');
+    return QueryRange(DateTime(t.year, t.month), DateTime(t.year, t.month + 1), l.rangeThisMonth);
   }
 
   // ---- Categories ------------------------------------------------------------
@@ -316,7 +362,11 @@ class IntentParser {
     final wantsIncome = prefer == TransactionType.income ||
         (prefer == null && incomeWords.any((w) => containsWord(text, w)));
 
-    final byName = _categories.where((c) => containsWord(text, c.name.toLowerCase())).toList();
+    // Stored name ("Makan") or the name shown in the app language ("Food").
+    final byName = _categories
+        .where((c) =>
+            containsWord(text, c.name.toLowerCase()) || containsWord(text, c.label.toLowerCase()))
+        .toList();
     if (byName.isNotEmpty) {
       final type = wantsIncome ? TransactionType.income : TransactionType.expense;
       return byName.where((c) => c.type == type).firstOrNull ?? byName.first;
@@ -343,19 +393,24 @@ class IntentParser {
 
   EditLastIntent _buildEdit(String text) {
     // "tadi" / "terakhir" point at the transaction, not at a new date.
-    final cleaned = text.replaceAll(RegExp(r'\b(yang |yg )?(tadi|barusan|terakhir)\b'), ' ');
+    final cleaned = text.replaceAll(
+        RegExp(r'\b(yang |yg )?(tadi|barusan|terakhir)\b|\b(the )?(last|previous)( one| transaction)?\b'),
+        ' ');
     final (date, rest) = _extractDate(cleaned);
     final amounts = _amounts(rest);
     final amount =
         _amountAfterJadi(rest, amounts) ?? (amounts.isEmpty ? null : amounts.last.value);
 
     // Only change the category when it's clearly the target:
-    // "kategorinya jadi makan" or "... jadi makan".
+    // "kategorinya jadi makan" / "change category to food" or "... jadi makan".
     Category? category;
-    final jadi = RegExp(r'\b(jadi|menjadi|harusnya|seharusnya)\b').allMatches(rest).lastOrNull;
+    final jadi = RegExp(r'\b(jadi|menjadi|harusnya|seharusnya|to|should be)\b')
+        .allMatches(rest)
+        .lastOrNull;
     if (jadi != null) category = _matchCategory(rest.substring(jadi.end));
-    if (category == null && RegExp(r'\bkategori(nya)?\b').hasMatch(rest)) {
-      category = _matchCategory(rest.replaceAll(RegExp(r'\bkategori(nya)?\b'), ' '));
+    final categoryWord = RegExp(r'\b(kategori(nya)?|category)\b');
+    if (category == null && categoryWord.hasMatch(rest)) {
+      category = _matchCategory(rest.replaceAll(categoryWord, ' '));
     }
     return EditLastIntent(amount: amount, category: category, date: date);
   }
@@ -374,7 +429,9 @@ class IntentParser {
     }
     desc = desc.replaceAll(RegExp(r'[^\w\s&\-]'), ' ').replaceAll(RegExp(r'\s+'), ' ').trim();
     String? description;
-    if (desc.isNotEmpty && desc != category?.name.toLowerCase()) {
+    if (desc.isNotEmpty &&
+        desc != category?.name.toLowerCase() &&
+        desc != category?.label.toLowerCase()) {
       final capped = desc.length > AppLimits.maxDescriptionLength
           ? desc.substring(0, AppLimits.maxDescriptionLength)
           : desc;

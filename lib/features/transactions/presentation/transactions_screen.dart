@@ -5,6 +5,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../core/constants/transaction_type.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../../l10n/l10n.dart';
 import '../../categories/domain/category.dart';
 import '../../categories/presentation/category_providers.dart';
 import '../../settings/presentation/settings_providers.dart';
@@ -35,16 +36,17 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final filter = ref.watch(transactionFilterProvider);
     final async = ref.watch(filteredTransactionsProvider);
     final hasAny = (ref.watch(transactionsProvider).value ?? const []).isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Transaksi'),
+        title: Text(l.navTransactions),
         actions: [
           IconButton(
-            tooltip: filter.sort == SortOrder.newestFirst ? 'Terbaru dulu' : 'Terlama dulu',
+            tooltip: filter.sort == SortOrder.newestFirst ? l.sortNewest : l.sortOldest,
             icon: Icon(filter.sort == SortOrder.newestFirst
                 ? Icons.arrow_downward_rounded
                 : Icons.arrow_upward_rounded),
@@ -63,12 +65,12 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               textInputAction: TextInputAction.search,
               onChanged: (v) => _filter.update((f) => f.copyWith(query: v)),
               decoration: InputDecoration(
-                hintText: 'Cari catatan atau kategori',
+                hintText: l.searchHint,
                 prefixIcon: const Icon(Icons.search_rounded),
                 suffixIcon: filter.query.isEmpty
                     ? null
                     : IconButton(
-                        tooltip: 'Hapus pencarian',
+                        tooltip: l.clearSearch,
                         icon: const Icon(Icons.close_rounded),
                         onPressed: () {
                           _search.clear();
@@ -88,24 +90,24 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                   return hasAny
                       ? EmptyState(
                           icon: Icons.filter_alt_off_rounded,
-                          title: 'Tidak ada transaksi yang cocok',
-                          message: 'Coba ubah kata kunci atau filter.',
+                          title: l.noMatchingTransactions,
+                          message: l.noMatchingHint,
                           action: OutlinedButton(
                             onPressed: () {
                               _search.clear();
                               _filter.update((f) => TransactionFilter(sort: f.sort));
                             },
-                            child: const Text('Reset filter'),
+                            child: Text(l.resetFilter),
                           ),
                         )
                       : EmptyState(
                           icon: Icons.receipt_long_outlined,
-                          title: 'Belum ada transaksi',
-                          message: 'Tekan tombol + untuk mencatat transaksi pertamamu.',
+                          title: l.noTransactionsYet,
+                          message: l.historyEmptyMessage,
                           action: FilledButton.icon(
                             onPressed: () => showQuickAddSheet(context),
                             icon: const Icon(Icons.add_rounded),
-                            label: const Text('Catat Transaksi'),
+                            label: Text(l.recordTransaction),
                           ),
                         );
                 }
@@ -125,6 +127,7 @@ class _FilterBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
     final notifier = ref.read(transactionFilterProvider.notifier);
     final categories = ref.watch(categoriesProvider).value ?? const <Category>[];
     final selectedCategory = categories.where((c) => c.id == filter.categoryId).firstOrNull;
@@ -140,7 +143,7 @@ class _FilterBar extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: ChoiceChip(
-                label: Text(t?.label ?? 'Semua'),
+                label: Text(t?.label ?? l.all),
                 selected: filter.type == t,
                 onSelected: (_) => notifier.update((f) => f.copyWith(
                       type: () => t,
@@ -154,7 +157,7 @@ class _FilterBar extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: FilterChip(
               avatar: Icon(selectedCategory?.icon ?? Icons.category_outlined, size: 16),
-              label: Text(selectedCategory?.name ?? 'Kategori'),
+              label: Text(selectedCategory?.label ?? l.category),
               selected: selectedCategory != null,
               showCheckmark: false,
               onSelected: (_) async {
@@ -169,7 +172,7 @@ class _FilterBar extends ConsumerWidget {
             child: FilterChip(
               avatar: const Icon(Icons.date_range_rounded, size: 16),
               label: Text(range == null
-                  ? 'Tanggal'
+                  ? l.date
                   : '${DateFormats.dayMonth.format(range.start)} – ${DateFormats.dayMonth.format(range.end)}'),
               selected: range != null,
               showCheckmark: false,
@@ -180,8 +183,8 @@ class _FilterBar extends ConsumerWidget {
                   firstDate: DateTime(2000),
                   lastDate: DateTime(now.year + 1, 12, 31),
                   initialDateRange: range,
-                  helpText: 'Pilih rentang tanggal',
-                  saveText: 'Terapkan',
+                  helpText: l.pickDateRange,
+                  saveText: l.apply,
                 );
                 if (picked != null) notifier.update((f) => f.copyWith(dateRange: () => picked));
               },
@@ -192,7 +195,7 @@ class _FilterBar extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: ActionChip(
                 avatar: const Icon(Icons.close_rounded, size: 16),
-                label: const Text('Reset'),
+                label: Text(l.reset),
                 onPressed: () => notifier.update((f) => TransactionFilter(query: f.query, sort: f.sort)),
               ),
             ),
@@ -221,14 +224,14 @@ class _FilterBar extends ConsumerWidget {
           children: [
             ListTile(
               leading: const Icon(Icons.all_inclusive_rounded),
-              title: const Text('Semua kategori'),
+              title: Text(context.l10n.allCategories),
               selected: filter.categoryId == null,
               onTap: () => Navigator.pop(context, -1),
             ),
             for (final c in options)
               ListTile(
                 leading: CategoryAvatar(icon: c.icon, color: c.color, size: 36),
-                title: Text(c.name),
+                title: Text(c.label),
                 subtitle: Text(c.type.label),
                 selected: c.id == filter.categoryId,
                 onTap: () => Navigator.pop(context, c.id),
@@ -247,6 +250,7 @@ class _GroupedList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
     final money = ref.watch(moneyFormatterProvider);
     final theme = Theme.of(context);
     final groups = groupByDay(transactions);
@@ -268,7 +272,7 @@ class _GroupedList extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 children: [
-                  Expanded(child: Text('${transactions.length} transaksi')),
+                  Expanded(child: Text(l.transactionCount(transactions.length))),
                   Text('+${money.format(totalIncome)}',
                       style: const TextStyle(color: AppColors.income, fontWeight: FontWeight.w600)),
                   const SizedBox(width: 12),
