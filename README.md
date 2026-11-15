@@ -10,6 +10,10 @@ Offline-first, no account needed. UI in Indonesian, amounts in Rupiah.
 - **Quick add** (+ button): Expense/Income toggle, big amount display with a built-in keypad
   (`000` key, quick amounts 15.000 / 25.000 / 50.000 / 100.000), category grid, optional
   date, payment method and note. Three taps: amount → category → Simpan.
+- **Scan struk** (top-right button on the dashboard): take or pick a receipt photo; ML Kit reads
+  it on-device (offline, Latin script bundled) and `ReceiptParser` extracts the total, date,
+  store name, payment method and a category guess. The quick-add sheet opens pre-filled; nothing
+  is saved until the user taps Simpan.
 - **Dashboard**: total balance, this month's income/expenses, remaining monthly budget,
   quick actions, budget warnings, 6-month income vs expense chart, latest 5 transactions.
 - **Transactions**: grouped by day with daily totals, search, filter by type / category /

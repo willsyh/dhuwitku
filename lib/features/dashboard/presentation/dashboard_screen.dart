@@ -13,6 +13,7 @@ import '../../../core/widgets/common_widgets.dart';
 import '../../budgets/domain/budget_calculator.dart';
 import '../../budgets/presentation/budget_progress.dart';
 import '../../budgets/presentation/budget_providers.dart';
+import '../../receipt_scan/presentation/receipt_scan_flow.dart';
 import '../../settings/presentation/settings_providers.dart';
 import '../../statistics/presentation/charts.dart';
 import '../../transactions/presentation/quick_add_sheet.dart';
@@ -53,7 +54,7 @@ class DashboardScreen extends ConsumerWidget {
           data: (d) => ListView(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
             children: [
-              _Header(festive: festive),
+              _Header(festive: festive, onScan: () => startReceiptScan(context, ref)),
               const SizedBox(height: 16),
               if (hasDemo) ...[
                 _DemoBanner(
@@ -122,8 +123,9 @@ class DashboardScreen extends ConsumerWidget {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.festive});
+  const _Header({required this.festive, required this.onScan});
   final FestiveTheme festive;
+  final VoidCallback onScan;
 
   @override
   Widget build(BuildContext context) {
@@ -162,9 +164,21 @@ class _Header extends StatelessWidget {
           if (festive.isActive) ...[
             const SizedBox(width: 12),
             ExcludeSemantics(
-              child: CategoryAvatar(icon: festive.icon, color: theme.colorScheme.primary, size: 48),
+              child: CategoryAvatar(icon: festive.icon, color: theme.colorScheme.primary, size: 44),
             ),
           ],
+          const SizedBox(width: 10),
+          // Scan a receipt into a new transaction.
+          IconButton.filledTonal(
+            tooltip: 'Scan struk',
+            onPressed: onScan,
+            iconSize: 24,
+            style: IconButton.styleFrom(
+              fixedSize: const Size(48, 48),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            icon: const Icon(Icons.document_scanner_outlined),
+          ),
         ],
       ),
     );

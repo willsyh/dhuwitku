@@ -19,23 +19,53 @@ import '../domain/finance_transaction.dart';
 import 'transaction_providers.dart';
 
 /// Opens the quick transaction sheet. Pass [initial] to edit an existing one.
+/// Values to pre-fill a new transaction with (e.g. from a scanned receipt).
+/// Nothing is saved until the user taps Simpan.
+class TransactionPrefill {
+  const TransactionPrefill({
+    this.amount,
+    this.categoryId,
+    this.date,
+    this.description,
+    this.paymentMethod,
+    this.notice,
+  });
+
+  final int? amount;
+  final int? categoryId;
+  final DateTime? date;
+  final String? description;
+  final String? paymentMethod;
+
+  /// Shown at the top of the sheet, e.g. "check the scanned values".
+  final String? notice;
+}
+
+/// Opens the quick transaction sheet. Pass [initial] to edit an existing one,
+/// or [prefill] to start a new one with suggested values.
 Future<void> showQuickAddSheet(
   BuildContext context, {
   TransactionType type = TransactionType.expense,
   FinanceTransaction? initial,
+  TransactionPrefill? prefill,
 }) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    builder: (_) => QuickAddSheet(initialType: initial?.type ?? type, initial: initial),
+    builder: (_) => QuickAddSheet(
+      initialType: initial?.type ?? type,
+      initial: initial,
+      prefill: prefill,
+    ),
   );
 }
 
 class QuickAddSheet extends ConsumerStatefulWidget {
-  const QuickAddSheet({super.key, required this.initialType, this.initial});
+  const QuickAddSheet({super.key, required this.initialType, this.initial, this.prefill});
   final TransactionType initialType;
   final FinanceTransaction? initial;
+  final TransactionPrefill? prefill;
 
   @override
   ConsumerState<QuickAddSheet> createState() => _QuickAddSheetState();
@@ -43,12 +73,14 @@ class QuickAddSheet extends ConsumerStatefulWidget {
 
 class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
   late TransactionType _type = widget.initialType;
-  late AmountInput _amount = AmountInput(widget.initial?.amount ?? 0);
-  late int? _categoryId = widget.initial?.category.id;
-  late DateTime _date = widget.initial?.date ?? DateTime.now();
-  late String? _paymentMethod = widget.initial?.paymentMethod;
-  late final _note = TextEditingController(text: widget.initial?.description ?? '');
-  late bool _showNote = (widget.initial?.description ?? '').isNotEmpty;
+  late AmountInput _amount = AmountInput(widget.initial?.amount ?? widget.prefill?.amount ?? 0);
+  late int? _categoryId = widget.initial?.category.id ?? widget.prefill?.categoryId;
+  late DateTime _date = widget.initial?.date ?? widget.prefill?.date ?? DateTime.now();
+  late String? _paymentMethod = widget.initial?.paymentMethod ?? widget.prefill?.paymentMethod;
+  late final _note = TextEditingController(
+    text: widget.initial?.description ?? widget.prefill?.description ?? '',
+  );
+  late bool _showNote = _note.text.isNotEmpty;
   final _noteFocus = FocusNode();
   bool _saving = false;
   String? _error;
@@ -177,6 +209,26 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (widget.prefill?.notice != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppColors.warning.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.document_scanner_outlined, size: 18, color: AppColors.warning),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(widget.prefill!.notice!, style: theme.textTheme.bodySmall),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           if (_isEditing)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),

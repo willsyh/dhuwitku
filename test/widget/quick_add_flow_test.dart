@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:dhuwitku/app/app.dart';
 import 'package:dhuwitku/app/theme/festive_theme.dart';
 import 'package:dhuwitku/core/database/app_database.dart';
 import 'package:dhuwitku/core/database/database_provider.dart';
 import 'package:dhuwitku/core/utils/formatters.dart';
 import 'package:dhuwitku/features/settings/presentation/settings_providers.dart';
+import 'package:dhuwitku/features/categories/data/category_repository.dart';
 import 'package:dhuwitku/features/transactions/data/transaction_repository.dart';
+import 'package:dhuwitku/features/transactions/presentation/quick_add_sheet.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -163,6 +167,48 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull, reason: 'overflow with $label selected');
     }
+    await disposeApp(tester, db);
+  });
+
+  testWidgets('scan button on Beranda offers camera and gallery', (tester) async {
+    final db = await pumpApp(tester);
+    await tester.tap(find.byTooltip('Scan struk'));
+    await tester.pumpAndSettle();
+    expect(find.text('Ambil foto'), findsOneWidget);
+    expect(find.text('Pilih dari galeri'), findsOneWidget);
+    await disposeApp(tester, db);
+  });
+
+  testWidgets('scanned values pre-fill the form and save only after Simpan', (tester) async {
+    final db = await pumpApp(tester);
+    final kopi = (await tester.runAsync(() => CategoryRepository(db).getAll()))!
+        .firstWhere((c) => c.name == 'Kopi');
+
+    final context = tester.element(find.text('Total Saldo'));
+    unawaited(showQuickAddSheet(
+      context,
+      prefill: TransactionPrefill(
+        amount: 28000,
+        categoryId: kopi.id,
+        description: 'Kopi Kenangan',
+        paymentMethod: 'QRIS',
+        notice: 'Hasil scan struk. Periksa sebelum menyimpan.',
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Hasil scan struk. Periksa sebelum menyimpan.'), findsOneWidget);
+    expect(find.text('Rp 28.000'), findsOneWidget);
+    expect(find.text('QRIS'), findsOneWidget);
+    expect((await tester.runAsync(() => TransactionRepository(db).getAll()))!, isEmpty);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Simpan'));
+    await tester.pumpAndSettle();
+    final saved = (await tester.runAsync(() => TransactionRepository(db).getAll()))!;
+    expect(saved.single.amount, 28000);
+    expect(saved.single.category.name, 'Kopi');
+    expect(saved.single.description, 'Kopi Kenangan');
+    expect(saved.single.paymentMethod, 'QRIS');
     await disposeApp(tester, db);
   });
 }
