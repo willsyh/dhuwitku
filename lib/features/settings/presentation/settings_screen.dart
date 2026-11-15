@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../app/router.dart';
+import '../../../app/theme/festive_theme.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/database/database_provider.dart';
 import '../../../core/utils/messenger.dart';
@@ -67,6 +68,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
     );
     if (picked != null) await ref.read(themeModeProvider.notifier).set(picked);
+  }
+
+  Future<void> _chooseFestive() async {
+    final current = ref.read(festiveThemeProvider);
+    final picked = await showDialog<FestiveTheme>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: const Text('Tema perayaan'),
+        children: [
+          RadioGroup<FestiveTheme>(
+            groupValue: current,
+            onChanged: (v) => Navigator.pop(context, v),
+            child: Column(
+              children: [
+                for (final t in FestiveTheme.values)
+                  RadioListTile(
+                    value: t,
+                    title: Text(t.label),
+                    secondary: CircleAvatar(
+                      radius: 16,
+                      backgroundColor: t.primary,
+                      child: Icon(t.icon, size: 18, color: Colors.white),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+    if (picked != null) await ref.read(festiveThemeProvider.notifier).set(picked);
   }
 
   Future<void> _chooseCurrency(CurrencyOption current) async {
@@ -254,6 +286,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
+    final festive = ref.watch(festiveThemeProvider);
     final currency = ref.watch(currencyProvider).value ?? currencyOptions.first;
     final hasDemo = ref.watch(hasDemoDataProvider);
 
@@ -277,6 +310,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           children: [
             _Group(title: 'Tampilan', children: [
               _Item(Icons.palette_outlined, 'Tema', subtitle: themeLabel, onTap: _chooseTheme),
+              _Item(Icons.celebration_outlined, 'Tema perayaan',
+                  subtitle: festive.label, onTap: _chooseFestive),
               _Item(Icons.payments_outlined, 'Mata uang',
                   subtitle: '${currency.code} (${currency.symbol})', onTap: () => _chooseCurrency(currency)),
             ]),

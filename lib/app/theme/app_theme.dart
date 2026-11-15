@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 abstract final class AppTheme {
-  static ThemeData light() => _build(Brightness.light);
-  static ThemeData dark() => _build(Brightness.dark);
+  static ThemeData light({Color primary = AppColors.primary}) =>
+      _build(Brightness.light, primary);
+  static ThemeData dark({Color primary = AppColors.primary}) =>
+      _build(Brightness.dark, primary);
 
-  static ThemeData _build(Brightness brightness) {
+  static ThemeData _build(Brightness brightness, Color primary) {
     final isDark = brightness == Brightness.dark;
     final background = isDark ? AppColors.darkBackground : AppColors.lightBackground;
     final surface = isDark ? AppColors.darkSurface : AppColors.lightSurface;
@@ -14,10 +16,10 @@ abstract final class AppTheme {
     final onSurface = isDark ? AppColors.darkText : AppColors.lightText;
 
     final scheme = ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
+      seedColor: primary,
       brightness: brightness,
     ).copyWith(
-      primary: AppColors.primary,
+      primary: primary,
       onPrimary: Colors.white,
       secondary: AppColors.secondary,
       onSecondary: Colors.white,
@@ -73,8 +75,8 @@ abstract final class AppTheme {
         surfaceTintColor: Colors.transparent,
         elevation: 8,
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: AppColors.primary,
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: primary,
         foregroundColor: Colors.white,
         shape: CircleBorder(),
         elevation: 4,
@@ -106,7 +108,7 @@ abstract final class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          borderSide: BorderSide(color: primary, width: 1.5),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(

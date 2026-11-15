@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../app/theme/festive_theme.dart';
 import '../../../core/database/database_provider.dart';
 import '../../../core/utils/formatters.dart';
 import '../data/settings_repository.dart';
@@ -28,6 +29,22 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
 }
 
 final themeModeProvider = NotifierProvider<ThemeModeNotifier, ThemeMode>(ThemeModeNotifier.new);
+
+class FestiveThemeNotifier extends Notifier<FestiveTheme> {
+  static const _key = 'festive_theme';
+
+  @override
+  FestiveTheme build() =>
+      FestiveTheme.fromName(ref.watch(sharedPreferencesProvider).getString(_key));
+
+  Future<void> set(FestiveTheme theme) async {
+    state = theme;
+    await ref.read(sharedPreferencesProvider).setString(_key, theme.name);
+  }
+}
+
+final festiveThemeProvider =
+    NotifierProvider<FestiveThemeNotifier, FestiveTheme>(FestiveThemeNotifier.new);
 
 final settingsRepositoryProvider =
     Provider((ref) => SettingsRepository(ref.watch(databaseProvider)));

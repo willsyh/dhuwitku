@@ -77,8 +77,10 @@ class BudgetStatusCard extends StatelessWidget {
               if (s.category != null)
                 CategoryAvatar(icon: s.category!.icon, color: s.category!.color, size: 40)
               else
-                const CategoryAvatar(
-                    icon: Icons.account_balance_wallet_rounded, color: AppColors.primary, size: 40),
+                CategoryAvatar(
+                    icon: Icons.account_balance_wallet_rounded,
+                    color: theme.colorScheme.primary,
+                    size: 40),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(

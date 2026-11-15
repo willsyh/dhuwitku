@@ -1,4 +1,5 @@
 import 'package:dhuwitku/app/app.dart';
+import 'package:dhuwitku/app/theme/festive_theme.dart';
 import 'package:dhuwitku/core/database/app_database.dart';
 import 'package:dhuwitku/core/database/database_provider.dart';
 import 'package:dhuwitku/core/utils/formatters.dart';
@@ -107,6 +108,28 @@ void main() {
       await tester.pumpAndSettle();
     }
     expect(find.text('Total Saldo'), findsOneWidget);
+    await disposeApp(tester, db);
+  });
+
+  testWidgets('festive theme changes greeting and primary color, and is remembered', (tester) async {
+    final db = await pumpApp(tester);
+    expect(find.text('Selamat Natal'), findsNothing);
+
+    await tester.tap(find.text('Pengaturan').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tema perayaan'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Natal'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Beranda').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Selamat Natal'), findsOneWidget);
+    final context = tester.element(find.text('Total Saldo'));
+    expect(Theme.of(context).colorScheme.primary, FestiveTheme.natal.primary);
+
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('festive_theme'), 'natal');
     await disposeApp(tester, db);
   });
 }

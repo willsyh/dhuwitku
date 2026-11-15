@@ -13,12 +13,13 @@ class DhuwitkuApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final primary = ref.watch(festiveThemeProvider).primary;
     return MaterialApp(
       title: AppInfo.name,
       debugShowCheckedModeBanner: false,
       scaffoldMessengerKey: rootMessengerKey,
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
+      theme: AppTheme.light(primary: primary),
+      darkTheme: AppTheme.dark(primary: primary),
       themeMode: ref.watch(themeModeProvider),
       locale: const Locale('id', 'ID'),
       supportedLocales: const [Locale('id', 'ID'), Locale('en', 'US')],

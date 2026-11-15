@@ -238,7 +238,7 @@ class StatisticsScreen extends ConsumerWidget {
           values: [for (final m in monthly12) m.expense],
           labelFor: (i) => DateFormats.shortMonth.format(monthly12[i].month),
           format: money.format,
-          color: AppColors.primary,
+          color: theme.colorScheme.primary,
           labelEvery: 2,
         ),
       ),
@@ -253,7 +253,7 @@ class _InsightRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (icon, color) = switch (insight.tone) {
-      InsightTone.info => (Icons.lightbulb_outline_rounded, AppColors.primary),
+      InsightTone.info => (Icons.lightbulb_outline_rounded, Theme.of(context).colorScheme.primary),
       InsightTone.positive => (Icons.thumb_up_alt_outlined, AppColors.income),
       InsightTone.warning => (Icons.trending_up_rounded, AppColors.warning),
       InsightTone.negative => (Icons.warning_amber_rounded, AppColors.expense),
