@@ -1401,4 +1401,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String rangeLastNDays(int count) {
     return '過去$count日間';
   }
+
+  @override
+  String get splashStatus1 => 'スターコインを集めています...';
+
+  @override
+  String get splashStatus2 => 'くもが貯金中...';
+
+  @override
+  String get splashStatus3 => 'おさいふを準備中...';
+
+  @override
+  String get splashStatus4 => 'もうすぐ完了！';
 }

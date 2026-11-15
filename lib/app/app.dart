@@ -6,6 +6,7 @@ import '../core/utils/messenger.dart';
 import '../features/settings/presentation/settings_providers.dart';
 import '../l10n/l10n.dart';
 import 'router.dart';
+import 'startup_splash.dart';
 import 'theme/app_theme.dart';
 
 class DhuwitkuApp extends ConsumerWidget {
@@ -27,6 +28,8 @@ class DhuwitkuApp extends ConsumerWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       initialRoute: AppRoutes.home,
       onGenerateRoute: AppRouter.onGenerateRoute,
+      // Loading animation over the app on a cold start.
+      builder: (context, child) => StartupSplash(child: child ?? const SizedBox.shrink()),
     );
   }
 }

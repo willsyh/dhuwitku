@@ -2579,6 +2579,30 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'{count} hari terakhir'**
   String rangeLastNDays(int count);
+
+  /// No description provided for @splashStatus1.
+  ///
+  /// In id, this message translates to:
+  /// **'Mengumpulkan koin bintang...'**
+  String get splashStatus1;
+
+  /// No description provided for @splashStatus2.
+  ///
+  /// In id, this message translates to:
+  /// **'Awan sedang menabung...'**
+  String get splashStatus2;
+
+  /// No description provided for @splashStatus3.
+  ///
+  /// In id, this message translates to:
+  /// **'Menyiapkan dompetmu...'**
+  String get splashStatus3;
+
+  /// No description provided for @splashStatus4.
+  ///
+  /// In id, this message translates to:
+  /// **'Sebentar lagi siap!'**
+  String get splashStatus4;
 }
 
 class _AppLocalizationsDelegate

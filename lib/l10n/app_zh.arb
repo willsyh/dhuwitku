@@ -407,5 +407,9 @@
   "rangeLastMonth": "上个月",
   "rangeThisYear": "今年",
   "rangeLastYear": "去年",
-  "rangeLastNDays": "最近 {count} 天"
+  "rangeLastNDays": "最近 {count} 天",
+  "splashStatus1": "正在收集星星金币...",
+  "splashStatus2": "小云正在存钱...",
+  "splashStatus3": "正在准备你的钱包...",
+  "splashStatus4": "马上就好！"
 }

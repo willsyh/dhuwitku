@@ -1425,4 +1425,16 @@ class AppLocalizationsId extends AppLocalizations {
   String rangeLastNDays(int count) {
     return '$count hari terakhir';
   }
+
+  @override
+  String get splashStatus1 => 'Mengumpulkan koin bintang...';
+
+  @override
+  String get splashStatus2 => 'Awan sedang menabung...';
+
+  @override
+  String get splashStatus3 => 'Menyiapkan dompetmu...';
+
+  @override
+  String get splashStatus4 => 'Sebentar lagi siap!';
 }

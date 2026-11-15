@@ -1394,4 +1394,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String rangeLastNDays(int count) {
     return '最近 $count 天';
   }
+
+  @override
+  String get splashStatus1 => '正在收集星星金币...';
+
+  @override
+  String get splashStatus2 => '小云正在存钱...';
+
+  @override
+  String get splashStatus3 => '正在准备你的钱包...';
+
+  @override
+  String get splashStatus4 => '马上就好！';
 }

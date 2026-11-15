@@ -407,5 +407,9 @@
   "rangeLastMonth": "지난달",
   "rangeThisYear": "올해",
   "rangeLastYear": "작년",
-  "rangeLastNDays": "최근 {count}일"
+  "rangeLastNDays": "최근 {count}일",
+  "splashStatus1": "별 코인을 모으는 중...",
+  "splashStatus2": "구름이 저축하는 중...",
+  "splashStatus3": "지갑을 준비하는 중...",
+  "splashStatus4": "거의 다 됐어요!"
 }

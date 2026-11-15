@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:dhuwitku/app/app.dart';
 import 'package:dhuwitku/app/home_shell.dart';
+import 'package:dhuwitku/app/startup_splash.dart';
+import 'package:dhuwitku/app/walking_cloud.dart';
 import 'package:dhuwitku/l10n/l10n.dart';
 import 'package:dhuwitku/app/theme/festive_theme.dart';
 import 'package:dhuwitku/core/database/app_database.dart';
@@ -409,6 +411,60 @@ void main() {
     expect(find.text('Dhuwitku Assistant'), findsOneWidget); // header too
 
     await container.read(languageProvider.notifier).set(AppLanguage.id);
+    await disposeApp(tester, db);
+  });
+
+  testWidgets('cold start plays the loading animation, then shows Beranda', (tester) async {
+    StartupSplash.resetForTest();
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 2.75;
+    addTearDown(tester.view.reset);
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        databaseProvider.overrideWithValue(db),
+      ],
+      child: const DhuwitkuApp(),
+    ));
+    double wink() => tester.widget<WalkingCloud>(find.byType(WalkingCloud)).wink;
+
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.text('Mengumpulkan koin bintang...'), findsOneWidget);
+    expect(find.textContaining('%'), findsOneWidget);
+    expect(wink(), 0);
+
+    await tester.pump(const Duration(milliseconds: 600)); // winks once while loading
+    expect(wink(), 1);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(wink(), 0);
+
+    await tester.pump(const Duration(milliseconds: 800));
+    expect(find.text('100%'), findsOneWidget);
+    expect(find.text('Sebentar lagi siap!'), findsOneWidget);
+    expect(wink(), 1); // and keeps winking when ready
+
+    // Hold, fade out, gone; the app below was built all along.
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('100%'), findsNothing);
+    expect(find.text('Total Saldo'), findsOneWidget);
+
+    // Only once per app start.
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        databaseProvider.overrideWithValue(db),
+      ],
+      child: const DhuwitkuApp(),
+    ));
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.textContaining('%'), findsNothing);
     await disposeApp(tester, db);
   });
 }

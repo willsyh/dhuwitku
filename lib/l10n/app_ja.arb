@@ -407,5 +407,9 @@
   "rangeLastMonth": "先月",
   "rangeThisYear": "今年",
   "rangeLastYear": "昨年",
-  "rangeLastNDays": "過去{count}日間"
+  "rangeLastNDays": "過去{count}日間",
+  "splashStatus1": "スターコインを集めています...",
+  "splashStatus2": "くもが貯金中...",
+  "splashStatus3": "おさいふを準備中...",
+  "splashStatus4": "もうすぐ完了！"
 }

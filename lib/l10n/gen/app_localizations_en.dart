@@ -1474,4 +1474,16 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get splashStatus1 => 'Collecting star coins...';
+
+  @override
+  String get splashStatus2 => 'The cloud is saving up...';
+
+  @override
+  String get splashStatus3 => 'Getting your wallet ready...';
+
+  @override
+  String get splashStatus4 => 'Almost ready!';
 }

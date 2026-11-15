@@ -407,5 +407,9 @@
   "rangeLastMonth": "last month",
   "rangeThisYear": "this year",
   "rangeLastYear": "last year",
-  "rangeLastNDays": "{count, plural, =1{the last day} other{the last {count} days}}"
+  "rangeLastNDays": "{count, plural, =1{the last day} other{the last {count} days}}",
+  "splashStatus1": "Collecting star coins...",
+  "splashStatus2": "The cloud is saving up...",
+  "splashStatus3": "Getting your wallet ready...",
+  "splashStatus4": "Almost ready!"
 }

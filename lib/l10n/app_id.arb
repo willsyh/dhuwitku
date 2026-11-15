@@ -992,5 +992,9 @@
         "type": "int"
       }
     }
-  }
+  },
+  "splashStatus1": "Mengumpulkan koin bintang...",
+  "splashStatus2": "Awan sedang menabung...",
+  "splashStatus3": "Menyiapkan dompetmu...",
+  "splashStatus4": "Sebentar lagi siap!"
 }

@@ -1402,4 +1402,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String rangeLastNDays(int count) {
     return '최근 $count일';
   }
+
+  @override
+  String get splashStatus1 => '별 코인을 모으는 중...';
+
+  @override
+  String get splashStatus2 => '구름이 저축하는 중...';
+
+  @override
+  String get splashStatus3 => '지갑을 준비하는 중...';
+
+  @override
+  String get splashStatus4 => '거의 다 됐어요!';
 }
