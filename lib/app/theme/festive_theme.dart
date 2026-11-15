@@ -142,6 +142,24 @@ enum FestiveTheme {
 
   bool get isActive => this != FestiveTheme.none;
 
+  /// Illustrated background for the balance card (`assets/banners/<name>.webp`).
+  String? get bannerAsset => isActive ? 'assets/banners/$name.webp' : null;
+
+  /// Which part of the wide banner to keep when cropped to the card. Banners
+  /// with lettering are shifted so the text stays away from the figures.
+  Alignment get bannerAlignment => switch (this) {
+        hariIbu || nyepi || waisak => Alignment.centerLeft,
+        tahunBaru => Alignment.centerRight,
+        _ => Alignment.center,
+      };
+
+  /// Extra darkening for busy banners so white figures stay readable.
+  double get bannerDim => switch (this) {
+        hariIbu || nyepi || waisak => 0.22,
+        tahunBaru => 0.12,
+        _ => 0,
+      };
+
   static FestiveTheme fromName(String? name) =>
       FestiveTheme.values.firstWhere((t) => t.name == name, orElse: () => FestiveTheme.none);
 }

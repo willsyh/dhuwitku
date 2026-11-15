@@ -309,20 +309,43 @@ class _BalanceCard extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          // Festive artwork: soft icon watermarks behind the figures.
-          if (festive.isActive) ...[
-            Positioned(
-              right: -22,
-              top: -26,
-              child: Icon(festive.icon, size: 150, color: Colors.white.withValues(alpha: 0.13)),
+          // Festive banner behind the figures, darkened (more on the left
+          // where the text is, and at the bottom) so white text stays readable.
+          if (festive.bannerAsset case final banner?) ...[
+            Positioned.fill(
+              child: Image.asset(
+                banner,
+                fit: BoxFit.cover,
+                alignment: festive.bannerAlignment,
+                gaplessPlayback: true,
+                // Undecodable asset -> plain theme color (the card's own color).
+                errorBuilder: (_, _, _) => const SizedBox.shrink(),
+              ),
             ),
-            Positioned(
-              right: 112,
-              top: 14,
-              child: Icon(
-                festive.accentIcon,
-                size: 40,
-                color: Colors.white.withValues(alpha: 0.16),
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      Colors.black.withValues(alpha: (0.62 + festive.bannerDim).clamp(0, 0.85)),
+                      Colors.black.withValues(alpha: (0.22 + festive.bannerDim).clamp(0, 0.85)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    stops: const [0.45, 1],
+                    colors: [Colors.transparent, Colors.black.withValues(alpha: 0.35)],
+                  ),
+                ),
               ),
             ),
           ],
