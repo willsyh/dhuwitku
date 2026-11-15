@@ -391,4 +391,24 @@ void main() {
     await container.read(languageProvider.notifier).set(AppLanguage.id);
     await disposeApp(tester, db);
   });
+
+  testWidgets('chat welcome follows a language change and keeps the conversation', (tester) async {
+    final db = await pumpApp(tester);
+    await openAssistant(tester);
+    expect(find.textContaining('Hai! Aku Asisten Dhuwitku.'), findsOneWidget);
+    await say(tester, 'saldo?');
+    expect(find.textContaining('Saldo kamu'), findsOneWidget);
+
+    final container = ProviderScope.containerOf(tester.element(find.byType(AssistantScreen)));
+    await container.read(languageProvider.notifier).set(AppLanguage.en);
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining("Hi! I'm the Dhuwitku Assistant."), findsOneWidget);
+    expect(find.textContaining('Hai! Aku Asisten Dhuwitku.'), findsNothing);
+    expect(find.textContaining('Saldo kamu'), findsOneWidget); // history kept
+    expect(find.text('Dhuwitku Assistant'), findsOneWidget); // header too
+
+    await container.read(languageProvider.notifier).set(AppLanguage.id);
+    await disposeApp(tester, db);
+  });
 }

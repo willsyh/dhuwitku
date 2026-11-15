@@ -26,12 +26,34 @@ class AssistantController extends Notifier<List<ChatMessage>> {
   int? _lastTouchedId;
 
   @override
-  List<ChatMessage> build() => [
-        _bot(
-          '${l10n.asstWelcome}\n\n${AssistantEngine.helpText}',
-          mood: MascotMood.happy,
-        ),
-      ];
+  List<ChatMessage> build() {
+    // When the app language changes, re-word the welcome message in place;
+    // the rest of the conversation is kept.
+    ref.listen(languageProvider, (_, _) => _refreshWelcome());
+    return [_welcome()];
+  }
+
+  /// Id of the greeting at the top of the chat.
+  int? _welcomeId;
+
+  String get _welcomeText => '${l10n.asstWelcome}\n\n${AssistantEngine.helpText}';
+
+  ChatMessage _welcome() {
+    final m = _bot(_welcomeText, mood: MascotMood.happy);
+    _welcomeId = m.id;
+    return m;
+  }
+
+  void _refreshWelcome() {
+    final id = _welcomeId;
+    if (id == null) return;
+    state = [
+      for (final m in state)
+        m.id == id
+            ? ChatMessage(id: m.id, sender: m.sender, text: _welcomeText, card: m.card, mood: m.mood)
+            : m,
+    ];
+  }
 
   ChatMessage _bot(String text, {ChatCard? card, MascotMood mood = MascotMood.idle}) =>
       ChatMessage(id: _nextId++, sender: ChatSender.bot, text: text, card: card, mood: mood);
@@ -58,7 +80,7 @@ class AssistantController extends Notifier<List<ChatMessage>> {
 
   void clear() {
     _lastTouchedId = null;
-    state = build();
+    state = [_welcome()];
   }
 
   MoneyFormatter get _money => ref.read(moneyFormatterProvider);
